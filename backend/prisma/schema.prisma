@@ -13,5 +13,91 @@ datasource db {
 model Group {
   id String @id @default(uuid())
   createdAt DateTime @default(now())
+  updatedAt              DateTime            @updatedAt
+
   name String
+  description String
+  inviteCode String @unique
+  currency String
+
+  expenses Expense[]
+  groupMembers GroupMember[]
 }
+
+model GroupMember {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  name String
+
+  group Group
+  expenses GroupMemberExpenses[]
+}
+
+
+model Expense {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  name String
+  description String
+  location String
+
+  assets ExpenseAsset[]
+  categories ExpenseCategory[]
+  subExpense SubExpense[]
+  group Group
+}
+
+model ExpenseAsset {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  // TODO Linus, upload id or something
+  uploadId String
+
+  expense Expense
+}
+
+model ExpenseCategory {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  name String
+
+  expense Expense
+}
+
+model SubExpense {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  priceReferenceCurrency Decimal
+  price Decimal
+  currency String
+
+  expense Expense
+  groupMember GroupMemberExpense[]
+}
+
+model GroupMemberExpense {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  amount Decimal
+  role GROUP_MEMBER_EXPENSE_ROLE 
+
+  subExpense SubExpense
+  groupMember GroupMember
+}
+
+enum GROUP_MEMBER_EXPENSE_ROLE {
+  SPONSOR
+  GAINER
+} 
