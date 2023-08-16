@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateReceiptDto } from './dto/create-receipt.dto';
 import { UpdateReceiptDto } from './dto/update-receipt.dto';
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
 
 @Injectable()
 export class ReceiptService {
-  create(createReceiptDto: CreateReceiptDto) {
+  async create(createReceiptDto: CreateReceiptDto) {
     return 'This action adds a new receipt';
   }
 
