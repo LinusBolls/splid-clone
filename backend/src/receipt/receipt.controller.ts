@@ -3,7 +3,7 @@ import { ReceiptService } from './receipt.service';
 import { CreateReceiptDto } from './dto/create-receipt.dto';
 import { UpdateReceiptDto } from './dto/update-receipt.dto';
 
-@Controller('receipt')
+@Controller('receipts')
 export class ReceiptController {
   constructor(private readonly receiptService: ReceiptService) {}
 
