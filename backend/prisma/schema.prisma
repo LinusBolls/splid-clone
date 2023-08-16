@@ -11,93 +11,99 @@ datasource db {
 }
 
 model Group {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedAt              DateTime            @updatedAt
+  updatedAt DateTime @updatedAt
 
-  name String
+  name        String
   description String
-  inviteCode String @unique
-  currency String
+  inviteCode  String @unique
+  currency    String
 
-  expenses Expense[]
+  expenses     Expense[]
   groupMembers GroupMember[]
 }
 
 model GroupMember {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedAt              DateTime            @updatedAt
+  updatedAt DateTime @updatedAt
 
   name String
 
-  group Group
-  expenses GroupMemberExpenses[]
+  group    Group                @relation(fields: [groupId], references: [id])
+  expenses GroupMemberExpense[]
+  groupId  String
 }
 
-
 model Expense {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedAt              DateTime            @updatedAt
+  updatedAt DateTime @updatedAt
 
-  name String
+  name        String
   description String
-  location String
+  location    String
 
-  assets ExpenseAsset[]
+  assets     ExpenseAsset[]
   categories ExpenseCategory[]
   subExpense SubExpense[]
-  group Group
+  group      Group             @relation(fields: [groupId], references: [id])
+  groupId    String
 }
 
 model ExpenseAsset {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedAt              DateTime            @updatedAt
+  updatedAt DateTime @updatedAt
 
   // TODO Linus, upload id or something
   uploadId String
 
-  expense Expense
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  expenseId String
 }
 
 model ExpenseCategory {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedAt              DateTime            @updatedAt
+  updatedAt DateTime @updatedAt
 
   name String
 
-  expense Expense
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  expenseId String
 }
 
 model SubExpense {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedAt              DateTime            @updatedAt
+  updatedAt DateTime @updatedAt
 
   priceReferenceCurrency Decimal
-  price Decimal
-  currency String
+  price                  Decimal
+  currency               String
 
-  expense Expense
+  expense     Expense              @relation(fields: [expenseId], references: [id])
   groupMember GroupMemberExpense[]
+  expenseId   String
 }
 
 model GroupMemberExpense {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  updatedAt              DateTime            @updatedAt
+  updatedAt DateTime @updatedAt
 
   amount Decimal
-  role GROUP_MEMBER_EXPENSE_ROLE 
+  role   GROUP_MEMBER_EXPENSE_ROLE
 
-  subExpense SubExpense
-  groupMember GroupMember
+  subExpense    SubExpense  @relation(fields: [subExpenseId], references: [id])
+  groupMember   GroupMember @relation(fields: [groupMemberId], references: [id])
+  subExpenseId  String
+  groupMemberId String
 }
 
 enum GROUP_MEMBER_EXPENSE_ROLE {
   SPONSOR
   GAINER
-} 
+}

@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { GroupService } from './group.service';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query
+} from '@nestjs/common';
+import {GroupService} from './group.service';
+import {CreateGroupDto} from './dto/create-group.dto';
+import {UpdateGroupDto} from './dto/update-group.dto';
 
 @Controller('groups')
 export class GroupController {
-  constructor(private readonly groupService: GroupService) {}
+    constructor(private readonly groupService: GroupService) {
+    }
 
-  @Post()
-  create(@Body() createGroupDto: CreateGroupDto) {
-    return this.groupService.create(createGroupDto);
-  }
+    @Post()
+    create(@Body() createGroupDto: CreateGroupDto) {
+        return this.groupService.create(createGroupDto);
+    }
 
-  @Get()
-  findAll() {
-    return this.groupService.findAll();
-  }
+    @Get()
+    findAllByInviteCode(@Query('inviteCode') inviteCode: string) {
+        if (inviteCode === undefined) {
+            throw new HttpException('inviteCode has to be set', HttpStatus.BAD_REQUEST);
+        }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.groupService.findOne(+id);
-  }
+        return this.groupService.findAllByInviteCode(inviteCode);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupService.update(+id, updateGroupDto);
-  }
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.groupService.findOne(id);
+    }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.groupService.remove(+id);
-  }
+    @Put(':id')
+    update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
+        return this.groupService.update(id, updateGroupDto);
+    }
+
+    @Delete(':id')
+    @HttpCode(204)
+    remove(@Param('id') id: string) {
+        return this.groupService.remove(id);
+    }
 }
