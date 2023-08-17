@@ -2,20 +2,26 @@ import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {CreateGroupDto} from './dto/create-group.dto';
 import {UpdateGroupDto} from './dto/update-group.dto';
 import {Prisma, PrismaClient} from '@prisma/client'
+import { ExpensesCategoryService } from './expenses/expenses-category/expenses-category.service';
 
 const prisma = new PrismaClient()
 
 @Injectable()
 export class GroupService {
-    create(createGroupDto: CreateGroupDto) {
-        return prisma.group.create({
+    constructor(private expenseCategoryService: ExpensesCategoryService){}
+    async create(createGroupDto: CreateGroupDto) {
+        const group = await prisma.group.create({
                 data: {
                     ...createGroupDto,
-                    inviteCode: this.generateInviteCode()
+                    inviteCode: this.generateInviteCode(),
                 }
             }
         );
-    }
+
+        this.expenseCategoryService.initalizeDefaultCategories(group.id);
+
+        return group;
+      }
 
     findOne(id: string) {
         return prisma.group.findFirst({
@@ -43,12 +49,16 @@ export class GroupService {
 
     async remove(id: string) {
         try {
+            this.expenseCategoryService.deleteCategoriesByGroupId(id);
+
             await prisma.group.delete({
                 where: {
                     id
                 }
             })
         } catch (e) {
+            console.log(e)
+            //TODO: Doesn't work needs to be fixed
             if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
                 throw new HttpException('Not found', HttpStatus.NOT_FOUND);
             }

@@ -1,1 +1,3 @@
-export class CreateExpensesAssetDto {}
+export class CreateExpensesAssetDto {
+  uploadId: string;
+}

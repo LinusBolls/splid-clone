@@ -1,1 +1,3 @@
-export class CreateExpensesCategoryDto {}
+export class CreateExpensesCategoryDto {
+  name: string;
+}

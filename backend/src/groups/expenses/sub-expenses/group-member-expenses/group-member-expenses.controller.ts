@@ -3,7 +3,7 @@ import { GroupMemberExpensesService } from './group-member-expenses.service';
 import { CreateGroupMemberExpenseDto } from './dto/create-group-member-expense.dto';
 import { UpdateGroupMemberExpenseDto } from './dto/update-group-member-expense.dto';
 
-@Controller('group-member-expenses')
+@Controller('/groups/:groupid/expenses/:expenseid/sub-expense/:subexpenseid/group-member-expenses')
 export class GroupMemberExpensesController {
   constructor(private readonly groupMemberExpensesService: GroupMemberExpensesService) {}
 

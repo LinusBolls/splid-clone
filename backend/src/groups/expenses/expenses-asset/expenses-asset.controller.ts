@@ -3,7 +3,7 @@ import { ExpensesAssetService } from './expenses-asset.service';
 import { CreateExpensesAssetDto } from './dto/create-expenses-asset.dto';
 import { UpdateExpensesAssetDto } from './dto/update-expenses-asset.dto';
 
-@Controller('expenses-asset')
+@Controller('/groups/:groupid/expenses/:expenseid/expenses-asset')
 export class ExpensesAssetController {
   constructor(private readonly expensesAssetService: ExpensesAssetService) {}
 

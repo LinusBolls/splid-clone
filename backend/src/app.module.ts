@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { GroupModule } from './group/group.module';
-import { GroupMembersModule } from './group-members/group-members.module';
-import { ExpensesModule } from './expenses/expenses.module';
+import { GroupModule } from './groups/groups.module';
 import { CurrenciesModule } from './currencies/currencies.module';
 
 @Module({
-  imports: [GroupModule, ExpensesModule, CurrenciesModule],
+  imports: [GroupModule, CurrenciesModule],
   controllers: [AppController],
   providers: [AppService],
 })

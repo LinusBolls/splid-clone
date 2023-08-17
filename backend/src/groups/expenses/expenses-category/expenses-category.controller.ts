@@ -3,13 +3,13 @@ import { ExpensesCategoryService } from './expenses-category.service';
 import { CreateExpensesCategoryDto } from './dto/create-expenses-category.dto';
 import { UpdateExpensesCategoryDto } from './dto/update-expenses-category.dto';
 
-@Controller('expenses-category')
+@Controller('/groups/:groupid/expenses/:expenseid/expenses-category')
 export class ExpensesCategoryController {
   constructor(private readonly expensesCategoryService: ExpensesCategoryService) {}
 
   @Post()
-  create(@Body() createExpensesCategoryDto: CreateExpensesCategoryDto) {
-    return this.expensesCategoryService.create(createExpensesCategoryDto);
+  create(@Param("groupid") id: string, @Body() createExpensesCategoryDto: CreateExpensesCategoryDto) {
+    return this.expensesCategoryService.create(createExpensesCategoryDto, id);
   }
 
   @Get()
