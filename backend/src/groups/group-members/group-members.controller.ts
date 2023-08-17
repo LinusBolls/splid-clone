@@ -3,7 +3,7 @@ import { GroupMembersService } from './group-members.service';
 import { CreateGroupMemberDto } from './dto/create-group-member.dto';
 import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
 
-@Controller('group-members')
+@Controller('/groups/:groupid/group-members')
 export class GroupMembersController {
   constructor(private readonly groupMembersService: GroupMembersService) {}
 

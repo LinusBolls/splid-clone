@@ -1,5 +1,5 @@
-import {ExpenseDto} from "../../expenses/dto/expense.dto";
-import {GroupMemberDto} from "../../group-members/dto/group-member.dto";
+import { ExpenseDto } from "../expenses/dto/expense.dto";
+import { GroupMemberDto } from "../group-members/dto/group-member.dto";
 
 export class GroupDto {
     id: string

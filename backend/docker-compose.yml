@@ -9,7 +9,7 @@ services:
     volumes:
       - postgres:/data/postgres
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5444:5432"
     networks:
       - postgres
     restart: unless-stopped

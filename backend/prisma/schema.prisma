@@ -20,8 +20,9 @@ model Group {
   inviteCode  String @unique
   currency    String
 
-  expenses     Expense[]
-  groupMembers GroupMember[]
+  expenses          Expense[]
+  expenseCategories ExpenseCategory[]
+  groupMembers      GroupMember[]
 }
 
 model GroupMember {
@@ -45,11 +46,11 @@ model Expense {
   description String
   location    String
 
-  assets     ExpenseAsset[]
-  categories ExpenseCategory[]
-  subExpense SubExpense[]
-  group      Group             @relation(fields: [groupId], references: [id])
-  groupId    String
+  assets                 ExpenseAsset[]
+  subExpense             SubExpense[]
+  group                  Group                    @relation(fields: [groupId], references: [id])
+  groupId                String
+  ExpenseExpenseCategory MappingExpenseCategory[]
 }
 
 model ExpenseAsset {
@@ -69,10 +70,22 @@ model ExpenseCategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
+  name                   String
+  group                  Group                    @relation(fields: [groupId], references: [id])
+  groupId                String
+  ExpenseExpenseCategory MappingExpenseCategory[]
+}
 
-  expense   Expense @relation(fields: [expenseId], references: [id])
-  expenseId String
+model MappingExpenseCategory {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expense           Expense         @relation(fields: [expenseId], references: [id])
+  expenseId         String
+  expenseCategory   ExpenseCategory @relation(fields: [expenseCategoryId], references: [id])
+  expenseCategoryId String
+
+  @@id([expenseId, expenseCategoryId])
 }
 
 model SubExpense {
