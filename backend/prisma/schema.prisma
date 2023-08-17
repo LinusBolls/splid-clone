@@ -107,3 +107,20 @@ enum GROUP_MEMBER_EXPENSE_ROLE {
   SPONSOR
   GAINER
 }
+
+model Currency {
+  createdAt DateTime @default(now())
+
+  symbol String @id
+  name String
+}
+
+model CurrencyRate {
+  createdAt DateTime @default(now())
+
+  symbol String
+  date DateTime @db.Date
+  rateEurQuote Decimal
+
+  @@id([symbol, date])
+}
