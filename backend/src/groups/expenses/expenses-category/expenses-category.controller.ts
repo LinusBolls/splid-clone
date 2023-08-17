@@ -1,14 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ExpensesCategoryService } from './expenses-category.service';
 import { CreateExpensesCategoryDto } from './dto/create-expenses-category.dto';
 import { UpdateExpensesCategoryDto } from './dto/update-expenses-category.dto';
 
 @Controller('/groups/:groupid/expenses/:expenseid/expenses-category')
 export class ExpensesCategoryController {
-  constructor(private readonly expensesCategoryService: ExpensesCategoryService) {}
+  constructor(
+    private readonly expensesCategoryService: ExpensesCategoryService,
+  ) {}
 
   @Post()
-  create(@Param("groupid") id: string, @Body() createExpensesCategoryDto: CreateExpensesCategoryDto) {
+  create(
+    @Param('groupid') id: string,
+    @Body() createExpensesCategoryDto: CreateExpensesCategoryDto,
+  ) {
     return this.expensesCategoryService.create(createExpensesCategoryDto, id);
   }
 
@@ -23,7 +36,10 @@ export class ExpensesCategoryController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateExpensesCategoryDto: UpdateExpensesCategoryDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateExpensesCategoryDto: UpdateExpensesCategoryDto,
+  ) {
     return this.expensesCategoryService.update(+id, updateExpensesCategoryDto);
   }
 

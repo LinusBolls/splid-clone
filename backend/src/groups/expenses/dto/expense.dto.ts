@@ -1,6 +1,6 @@
-import { ExpensesAssetDto } from "../expenses-asset/dto/expenses-asset.dto";
-import { ExpensesCategoryDto } from "../expenses-category/dto/expenses-category.dto";
-import { SubExpenseDto } from "../sub-expenses/dto/sub-expense.dto";
+import { ExpensesAssetDto } from '../expenses-asset/dto/expenses-asset.dto';
+import { ExpensesCategoryDto } from '../expenses-category/dto/expenses-category.dto';
+import { SubExpenseDto } from '../sub-expenses/dto/sub-expense.dto';
 
 export class ExpenseDto {
   id: string;

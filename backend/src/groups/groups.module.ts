@@ -1,12 +1,19 @@
 import { Module } from '@nestjs/common';
-import { GroupService } from './groups.service';
-import { GroupController } from './groups.controller';
+import { GroupsService } from './groups.service';
+import { GroupsController } from './groups.controller';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupMembersModule } from './group-members/group-members.module';
+import { ExpensesCategoryModule } from './expenses/expenses-category/expenses-category.module';
+import { CurrenciesModule } from '../currencies/currencies.module';
 
 @Module({
-  controllers: [GroupController],
-  providers: [GroupService],
-  imports: [ExpensesModule, GroupMembersModule],
+  controllers: [GroupsController],
+  providers: [GroupsService],
+  imports: [
+    CurrenciesModule,
+    ExpensesModule,
+    ExpensesCategoryModule,
+    GroupMembersModule,
+  ],
 })
-export class GroupModule {}
+export class GroupsModule {}

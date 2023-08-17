@@ -5,6 +5,6 @@ import { ExpensesCategoryController } from './expenses-category.controller';
 @Module({
   controllers: [ExpensesCategoryController],
   providers: [ExpensesCategoryService],
-  exports: [ExpensesCategoryService]
+  exports: [ExpensesCategoryService],
 })
 export class ExpensesCategoryModule {}

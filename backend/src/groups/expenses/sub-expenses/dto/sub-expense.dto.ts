@@ -10,5 +10,4 @@ export class SubExpenseDto {
 
   expenseId: string;
   groupMember: GroupMemberExpenseDto[];
-
 }

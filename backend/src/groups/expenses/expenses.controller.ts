@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
@@ -8,7 +16,10 @@ export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @Post()
-  create(@Param("groupid") id: string, @Body() createExpenseDto: CreateExpenseDto) {
+  create(
+    @Param('groupid') id: string,
+    @Body() createExpenseDto: CreateExpenseDto,
+  ) {
     return this.expensesService.create(createExpenseDto, id);
   }
 

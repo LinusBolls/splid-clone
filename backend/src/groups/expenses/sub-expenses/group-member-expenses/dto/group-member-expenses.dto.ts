@@ -8,10 +8,9 @@ class GroupMemberExpenseDto {
 
   subExpenseId: string;
   groupMemberId: string;
- 
 }
 
-enum GroupMemberRole{
+enum GroupMemberRole {
   Sponser,
-  Gainer
+  Gainer,
 }

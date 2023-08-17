@@ -1,1 +1,1 @@
-export class GroupMemberDto{}
+export class GroupMemberDto {}

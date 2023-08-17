@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { CreateExpensesAssetDto } from './dto/create-expenses-asset.dto';
 import { UpdateExpensesAssetDto } from './dto/update-expenses-asset.dto';
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 @Injectable()
 export class ExpensesAssetService {
@@ -10,8 +10,8 @@ export class ExpensesAssetService {
     return prisma.expenseAsset.create({
       data: {
         uploadId: createExpensesAssetDto.uploadId,
-        expenseId: "dongs",
-      }
+        expenseId: 'dongs',
+      },
     });
   }
 

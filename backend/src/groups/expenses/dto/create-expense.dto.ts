@@ -1,5 +1,5 @@
-import { Allow } from "class-validator";
-import { CreateExpensesCategoryDto } from "../expenses-category/dto/create-expenses-category.dto";
+import { Allow } from 'class-validator';
+import { CreateExpensesCategoryDto } from '../expenses-category/dto/create-expenses-category.dto';
 
 export class CreateExpenseDto {
   @Allow()
