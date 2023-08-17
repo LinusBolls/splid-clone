@@ -1,23 +1,29 @@
-import {Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {fetchCurrencies} from "./ExchangeRatesApiClient";
 import {PrismaClient} from "@prisma/client";
+import {Currency} from "./entities/currency.entity";
 
 const prisma = new PrismaClient()
 
 @Injectable()
 export class CurrenciesService {
     findAll() {
-        return `This action returns all currencies`;
+        return prisma.currency.findMany();
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} currency`;
-    }
-}
+    findOne(symbol: string) {
+        const result = prisma.currency.findFirst({
+            where: {
+                symbol
+            }
+        });
 
-interface Currency {
-    symbol: string;
-    name: string;
+        if (result === null) {
+            throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+        }
+
+        return result;
+    }
 }
 
 export async function populateDbs() {

@@ -1,1 +1,5 @@
-export class Currency {}
+export class Currency {
+    symbol: string
+    name: string
+    createdAt?: Date
+}

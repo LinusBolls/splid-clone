@@ -2,12 +2,20 @@ import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {CreateGroupDto} from './dto/create-group.dto';
 import {UpdateGroupDto} from './dto/update-group.dto';
 import {Prisma, PrismaClient} from '@prisma/client'
+import {CurrenciesService} from "../currencies/currencies.service";
 
 const prisma = new PrismaClient()
 
 @Injectable()
-export class GroupService {
-    create(createGroupDto: CreateGroupDto) {
+export class GroupsService {
+    constructor(private readonly currenciesService: CurrenciesService) {
+    }
+
+    async create(createGroupDto: CreateGroupDto) {
+        if (await this.currenciesService.findOne(createGroupDto.currency) === null) {
+            throw new HttpException('Currency unknown', HttpStatus.BAD_REQUEST);
+        }
+
         return prisma.group.create({
                 data: {
                     ...createGroupDto,
