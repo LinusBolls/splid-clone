@@ -1,5 +1,8 @@
+import {Expose} from "class-transformer";
+
 export class Currency {
-    symbol: string
-    name: string
+    @Expose() symbol: string
+    @Expose() name: string
     createdAt?: Date
+    @Expose() date: Date
 }

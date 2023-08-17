@@ -12,7 +12,7 @@ export class GroupsService {
     }
 
     async create(createGroupDto: CreateGroupDto) {
-        if (await this.currenciesService.findOne(createGroupDto.currency) === null) {
+        if (await this.currenciesService.findOneCurrency(createGroupDto.currency, new Date()) === null) {
             throw new HttpException('Currency unknown', HttpStatus.BAD_REQUEST);
         }
 

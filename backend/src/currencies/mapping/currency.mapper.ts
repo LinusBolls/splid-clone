@@ -8,10 +8,19 @@ import {Injectable} from "@nestjs/common";
 export class CurrencyMapper {
     @Mappings()
     dtoFromEntity(currency: Currency): CurrencyDto {
-        return new CurrencyDto;
+        return new CurrencyDto();
     }
 
     dtosFromEntities(currencies: Currency[]): CurrencyDto[] {
         return currencies.map(currency => this.dtoFromEntity(currency));
+    }
+
+    @Mappings()
+    entityFromApi(currency: ApiCurrency): Currency {
+        return new Currency();
+    }
+
+    entitiesFromApi(apiCurrencies: ApiCurrency[]): Currency[] {
+        return apiCurrencies.map(currency => this.entityFromApi(currency));
     }
 }

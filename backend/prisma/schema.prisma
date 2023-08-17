@@ -111,18 +111,21 @@ enum GROUP_MEMBER_EXPENSE_ROLE {
 model Currency {
   createdAt DateTime @default(now())
 
-  symbol       String         @id
+  symbol       String
   name         String
+  date           DateTime @db.Date
   CurrencyRate CurrencyRate[]
+
+  @@id([symbol, date])
 }
 
 model CurrencyRate {
   createdAt DateTime @default(now())
 
-  currency       Currency @relation(fields: [currencySymbol], references: [symbol])
-  currencySymbol String
+  currency       Currency @relation(fields: [symbol, date], references: [symbol, date])
+  symbol String
   date           DateTime @db.Date
-  rateEurQuote   Decimal
+  rateEurBase   Decimal
 
-  @@id([currencySymbol, date])
+  @@id([symbol, date])
 }
