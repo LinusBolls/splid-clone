@@ -1,44 +1,52 @@
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from 'react-native';
 
 export interface ChipProps {
-    title: string;
-    imageUrl?: string;
-    isActive: boolean;
+  title: string;
+  isActive: boolean;
+  icon?: JSX.Element;
 
-    onPress: () => void;
+  onPress: () => void;
 }
 export default function Chip({
-    title,
-    imageUrl,
-    isActive,
+  title,
+  isActive,
+  icon,
 
-    onPress,
+  onPress,
 }: ChipProps) {
-    return <Pressable
-        style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+  return (
+    <Pressable
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
 
-            flexGrow: 0,
-            flexShrink: 1,
+        marginRight: 8,
+        marginTop: 8,
 
-            height: 32,
-            paddingHorizontal: 16,
+        height: 32,
+        paddingRight: 16,
+        paddingLeft: icon ? 4 : 16,
 
-            borderRadius: 999,
-            borderWidth: 1,
+        borderRadius: 999,
+        borderWidth: 1,
 
-            backgroundColor: isActive ? "#E8E1F9" : "white",
-            borderColor: isActive ? "#C3B0EF" : "#C4C4C4",
-        }}
-        onPress={onPress}
+        backgroundColor: isActive ? '#E8E1F9' : 'white',
+        borderColor: isActive ? '#C3B0EF' : '#C4C4C4',
+      }}
+      onPress={onPress}
     >
-        <Text style={{
-            fontSize: 13,
-            fontWeight: "600",
+      {icon}
+      <Text
+        style={{
+          fontSize: 13,
+          fontWeight: '600',
 
-            color: isActive ? "#682BE9" : "#222",
-        }}>{title}</Text>
+          color: isActive ? '#682BE9' : '#222',
+        }}
+      >
+        {title}
+      </Text>
     </Pressable>
+  );
 }
