@@ -7,7 +7,7 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { CurrenciesModule } from './currencies/currencies.module';
 
 @Module({
-  imports: [GroupModule, GroupMembersModule, ExpensesModule, CurrenciesModule],
+  imports: [GroupModule, ExpensesModule, CurrenciesModule],
   controllers: [AppController],
   providers: [AppService],
 })
