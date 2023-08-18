@@ -1,45 +1,49 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
-import { GroupMembersService } from './group-members.service';
-import { CreateGroupMemberDto } from './dto/create-group-member.dto';
-import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
+import {Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post,} from '@nestjs/common';
+import {GroupMembersService} from './group-members.service';
+import {CreateGroupMemberDto} from './dto/create-group-member.dto';
+import {GroupsService} from "../groups.service";
 
-@Controller('/groups/:groupid/group-members')
+@Controller('/groups/:groupId/group-members')
 export class GroupMembersController {
-  constructor(private readonly groupMembersService: GroupMembersService) {}
+  constructor(private readonly groupMembersService: GroupMembersService, private groupsService: GroupsService) {}
 
   @Post()
-  create(@Body() createGroupMemberDto: CreateGroupMemberDto) {
-    return this.groupMembersService.create(createGroupMemberDto);
+  async create(@Body() createGroupMemberDto: CreateGroupMemberDto, @Param('groupId') groupId) {
+    if (!await this.groupsService.exists(groupId)) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.groupMembersService.create(createGroupMemberDto, groupId);
   }
 
   @Get()
-  findAll() {
-    return this.groupMembersService.findAll();
+  async findAll(@Param('groupId') groupId) {
+    if (!await this.groupsService.exists(groupId)) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.groupMembersService.findAll(groupId);
+
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.groupMembersService.findOne(+id);
-  }
+  async findOne(@Param('id') id: string, @Param('groupId') groupId) {
+    const findResult = await this.groupMembersService.findOne(id, groupId);
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateGroupMemberDto: UpdateGroupMemberDto,
-  ) {
-    return this.groupMembersService.update(+id, updateGroupMemberDto);
+    if (findResult === null) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+
+    return findResult;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.groupMembersService.remove(+id);
+  @HttpCode(204)
+  async remove(@Param('id') id: string, @Param('groupId') groupId) {
+    const deletionResult = await this.groupMembersService.remove(id, groupId);
+
+    if (deletionResult === null) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
   }
 }

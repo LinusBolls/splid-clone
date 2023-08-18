@@ -1,26 +1,60 @@
-import { Injectable } from '@nestjs/common';
-import { CreateGroupMemberDto } from './dto/create-group-member.dto';
-import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
+import {Injectable} from '@nestjs/common';
+import {CreateGroupMemberDto} from './dto/create-group-member.dto';
+import {PrismaClient} from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 @Injectable()
 export class GroupMembersService {
-  create(createGroupMemberDto: CreateGroupMemberDto) {
-    return 'This action adds a new groupMember';
-  }
+    create(createGroupMemberDto: CreateGroupMemberDto, groupId: string) {
 
-  findAll() {
-    return `This action returns all groupMembers`;
-  }
+        return prisma.groupMember.create({
+            data: {
+                ...createGroupMemberDto,
+                groupId
+            },
+        });
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} groupMember`;
-  }
+    findAll(groupId: string) {
+        return prisma.groupMember.findMany({
+            where: {
+                groupId
+            },
+        });
+    }
 
-  update(id: number, updateGroupMemberDto: UpdateGroupMemberDto) {
-    return `This action updates a #${id} groupMember`;
-  }
+    findOne(id: string, groupId: string) {
+        return prisma.groupMember.findFirst({
+            where: {
+                id,
+                groupId
+            },
+        });
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} groupMember`;
-  }
+    async remove(id: string, groupId: string) {
+        const queryResult = await prisma.groupMember.findFirst({
+            where: {
+                id,
+                groupId
+            },
+        });
+
+        if (queryResult === null) {
+            return null
+        }
+
+        await prisma.groupMemberPaymentDetail.deleteMany({
+            where: {
+                groupMemberId: id
+            },
+        });
+
+        return prisma.groupMember.delete({
+            where: {
+                id
+            },
+        });
+    }
 }

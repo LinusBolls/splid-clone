@@ -15,5 +15,6 @@ import { CurrenciesModule } from '../currencies/currencies.module';
     ExpensesCategoryModule,
     GroupMembersModule,
   ],
+  exports: [GroupsService]
 })
 export class GroupsModule {}

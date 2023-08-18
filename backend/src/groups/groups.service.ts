@@ -30,7 +30,7 @@ export class GroupsService {
       },
     });
 
-    this.expenseCategoryService.initalizeDefaultCategories(group.id);
+    await this.expenseCategoryService.initalizeDefaultCategories(group.id);
 
     return group;
   }
@@ -49,6 +49,14 @@ export class GroupsService {
         inviteCode,
       },
     });
+  }
+
+  async exists(id: string) {
+    return await prisma.group.findFirst({
+      where: {
+        id,
+      },
+    }) !== null;
   }
 
   update(id: string, updateGroupDto: UpdateGroupDto) {

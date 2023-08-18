@@ -1,1 +1,4 @@
-export class GroupMember {}
+export class GroupMember {
+    name: string
+    status: string
+}
