@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { CreateGroupMemberDto } from './dto/create-group-member.dto';
-import {GroupMember, PrismaClient} from '@prisma/client';
-import {UpdateGroupMemberDto} from "./dto/update-group-member.dto";
-import {PaymentDetailsService} from "./payment-details/payment-details.service";
-import {GroupMemberEntity} from "./entities/group-member.entity";
-import {PaymentDetailMapper} from "./payment-details/mapping/payment-detail.mapper";
+import { GroupMember, PrismaClient } from '@prisma/client';
+import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
+import { PaymentDetailsService } from './payment-details/payment-details.service';
+import { GroupMemberEntity } from './entities/group-member.entity';
+import { PaymentDetailMapper } from './payment-details/mapping/payment-detail.mapper';
 
 const prisma = new PrismaClient();
 
 @Injectable()
 export class GroupMembersService {
-  constructor(private paymentDetailsService: PaymentDetailsService, private paymentDetailMapper: PaymentDetailMapper) {
-  }
+  constructor(
+    private paymentDetailsService: PaymentDetailsService,
+    private paymentDetailMapper: PaymentDetailMapper,
+  ) {}
 
   async create(createGroupMemberDto: CreateGroupMemberDto, groupId: string) {
     const result = await prisma.groupMember.create({
@@ -37,7 +39,7 @@ export class GroupMembersService {
   async findOne(id: string) {
     const result = await prisma.groupMember.findFirst({
       where: {
-        id
+        id,
       },
     });
 
@@ -46,18 +48,18 @@ export class GroupMembersService {
 
   async exists(id: string) {
     return (
-        (await prisma.groupMember.findFirst({
-          where: {
-            id,
-          },
-        })) !== null
+      (await prisma.groupMember.findFirst({
+        where: {
+          id,
+        },
+      })) !== null
     );
   }
 
   async update(updateGroupMemberDto: UpdateGroupMemberDto, id: string) {
     const result = await prisma.groupMember.update({
       where: {
-        id
+        id,
       },
       data: {
         ...updateGroupMemberDto,
@@ -68,30 +70,36 @@ export class GroupMembersService {
   }
 
   async remove(id: string) {
-    await this.paymentDetailsService.removeByMemberId(id)
+    await this.paymentDetailsService.removeByMemberId(id);
 
     return prisma.groupMember.delete({
       where: {
-        id
+        id,
       },
     });
   }
 
-  private async includePaymentDetail(member: GroupMember): Promise<GroupMemberEntity> {
+  private async includePaymentDetail(
+    member: GroupMember,
+  ): Promise<GroupMemberEntity> {
     return {
       ...member,
-      paymentDetails: this.paymentDetailMapper.entitiesFromDb(await this.paymentDetailsService.findAll(member.id))
-    }
+      paymentDetails: this.paymentDetailMapper.entitiesFromDb(
+        await this.paymentDetailsService.findAll(member.id),
+      ),
+    };
   }
 
-  private async includePaymentDetails(members: GroupMember[]): Promise<GroupMemberEntity[]> {
-    const list: GroupMemberEntity[] = []
+  private async includePaymentDetails(
+    members: GroupMember[],
+  ): Promise<GroupMemberEntity[]> {
+    const list: GroupMemberEntity[] = [];
 
     for (const member of members) {
-      const completedMember = await this.includePaymentDetail(member)
-      list.push(completedMember)
+      const completedMember = await this.includePaymentDetail(member);
+      list.push(completedMember);
     }
 
-    return list
+    return list;
   }
 }

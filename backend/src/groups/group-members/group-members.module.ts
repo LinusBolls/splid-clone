@@ -8,6 +8,6 @@ import { GroupsModule } from '../groups.module';
   controllers: [GroupMembersController],
   providers: [GroupMembersService],
   imports: [PaymentDetailsModule, forwardRef(() => GroupsModule)],
-  exports: [GroupMembersService]
+  exports: [GroupMembersService],
 })
 export class GroupMembersModule {}

@@ -1,8 +1,19 @@
-import {Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put,} from '@nestjs/common';
-import {GroupMembersService} from './group-members.service';
-import {CreateGroupMemberDto} from './dto/create-group-member.dto';
-import {GroupsService} from '../groups.service';
-import {UpdateGroupMemberDto} from "./dto/update-group-member.dto";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { GroupMembersService } from './group-members.service';
+import { CreateGroupMemberDto } from './dto/create-group-member.dto';
+import { GroupsService } from '../groups.service';
+import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
 
 @Controller('/groups/:groupId/group-members')
 export class GroupMembersController {
@@ -45,8 +56,9 @@ export class GroupMembersController {
 
   @Put(':id')
   async update(
-      @Body() updateGroupMemberDto: UpdateGroupMemberDto,
-      @Param('id') id: string, @Param('groupId') groupId
+    @Body() updateGroupMemberDto: UpdateGroupMemberDto,
+    @Param('id') id: string,
+    @Param('groupId') groupId,
   ) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);

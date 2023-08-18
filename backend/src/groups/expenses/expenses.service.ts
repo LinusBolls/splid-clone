@@ -29,8 +29,8 @@ export class ExpensesService {
   findAll(groupId: string) {
     return prisma.expense.findMany({
       where: {
-        groupId
-      }
+        groupId,
+      },
     });
   }
 
@@ -38,7 +38,7 @@ export class ExpensesService {
     return prisma.expense.findFirst({
       where: {
         id,
-        groupId
+        groupId,
       },
     });
   }
@@ -48,7 +48,7 @@ export class ExpensesService {
       (await prisma.expense.findFirst({
         where: {
           id,
-          groupId
+          groupId,
         },
       })) !== null
     );

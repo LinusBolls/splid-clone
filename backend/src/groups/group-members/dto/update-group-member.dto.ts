@@ -1,4 +1,3 @@
-import {CreateGroupMemberDto} from './create-group-member.dto';
+import { CreateGroupMemberDto } from './create-group-member.dto';
 
-export class UpdateGroupMemberDto extends CreateGroupMemberDto {
-}
+export class UpdateGroupMemberDto extends CreateGroupMemberDto {}

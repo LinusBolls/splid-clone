@@ -20,7 +20,7 @@ export class ExpensesController {
   constructor(
     private readonly expensesService: ExpensesService,
     private readonly groupsService: GroupsService,
-    private readonly categoryService: ExpensesCategoryService
+    private readonly categoryService: ExpensesCategoryService,
   ) {}
 
   @Post()
@@ -34,7 +34,10 @@ export class ExpensesController {
 
     for (const category of createExpenseDto.categories) {
       if (!(await this.categoryService.exists(category.id, groupId))) {
-        throw new HttpException(`Category with the id: ${category.id} doesn't exist`, HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          `Category with the id: ${category.id} doesn't exist`,
+          HttpStatus.NOT_FOUND,
+        );
       }
     }
 
@@ -42,7 +45,7 @@ export class ExpensesController {
   }
 
   @Get()
-  async findAll(@Param("groupid") groupId: string) {
+  async findAll(@Param('groupid') groupId: string) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
@@ -50,7 +53,7 @@ export class ExpensesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Param("groupid") groupId: string) {
+  async findOne(@Param('id') id: string, @Param('groupid') groupId: string) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
@@ -68,7 +71,7 @@ export class ExpensesController {
   async update(
     @Param('id') id: string,
     @Param('groupid') groupId: string,
-    @Body() updateExpenseDto: UpdateExpenseDto
+    @Body() updateExpenseDto: UpdateExpenseDto,
   ) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
@@ -82,10 +85,7 @@ export class ExpensesController {
   }
 
   @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @Param('groupid') groupId: string,
-  ) {
+  async remove(@Param('id') id: string, @Param('groupid') groupId: string) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }

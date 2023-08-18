@@ -58,8 +58,8 @@ export class ExpensesCategoryService {
   findAll(groupId: string) {
     return prisma.expenseCategory.findMany({
       where: {
-        groupId
-      }
+        groupId,
+      },
     });
   }
 
@@ -67,26 +67,30 @@ export class ExpensesCategoryService {
     return prisma.expenseCategory.findFirst({
       where: {
         id,
-        groupId
+        groupId,
       },
     });
   }
 
-  async exists(id: string, groupId: string){
+  async exists(id: string, groupId: string) {
     return (
       (await prisma.expenseCategory.findFirst({
         where: {
           id,
-          groupId
+          groupId,
         },
       })) !== null
     );
   }
-  update(id: string, updateExpensesCategoryDto: UpdateExpensesCategoryDto, groupId: string) {
+  update(
+    id: string,
+    updateExpensesCategoryDto: UpdateExpensesCategoryDto,
+    groupId: string,
+  ) {
     return prisma.expenseCategory.update({
       where: {
         id,
-        groupId
+        groupId,
       },
       data: {
         ...updateExpensesCategoryDto,
@@ -97,13 +101,13 @@ export class ExpensesCategoryService {
   async remove(id: string, groupId: string) {
     const findResult = await prisma.mappingExpenseCategory.findMany();
     if (findResult.length > 0) {
-      throw new Error("Category is associated to Expenses");
+      throw new Error('Category is associated to Expenses');
     }
 
     return prisma.expenseCategory.delete({
       where: {
         id,
-        groupId
+        groupId,
       },
     });
   }

@@ -9,7 +9,12 @@ import { GroupsModule } from '../groups.module';
 @Module({
   controllers: [ExpensesController],
   providers: [ExpensesService],
-  imports: [SubExpensesModule, ExpensesAssetModule, ExpensesCategoryModule, forwardRef(()=> GroupsModule)],
+  imports: [
+    SubExpensesModule,
+    ExpensesAssetModule,
+    ExpensesCategoryModule,
+    forwardRef(() => GroupsModule),
+  ],
   exports: [ExpensesService],
 })
 export class ExpensesModule {}

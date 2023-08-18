@@ -1,19 +1,34 @@
-import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { PaymentDetailsService } from './payment-details.service';
 import { CreatePaymentDetailDto } from './dto/create-payment-detail.dto';
-import {GroupMembersService} from "../group-members.service";
-import {GroupsService} from "../../groups.service";
-import {PaymentDetailMapper} from "./mapping/payment-detail.mapper";
+import { GroupMembersService } from '../group-members.service';
+import { GroupsService } from '../../groups.service';
+import { PaymentDetailMapper } from './mapping/payment-detail.mapper';
 
 @Controller('/groups/:groupId/group-members/:memberId/payment-details')
 export class PaymentDetailsController {
-  constructor(private readonly paymentDetailsService: PaymentDetailsService,
-              private groupMembersService: GroupMembersService,
-              private groupsService: GroupsService,
-              private paymentDetailMapper: PaymentDetailMapper) {}
+  constructor(
+    private readonly paymentDetailsService: PaymentDetailsService,
+    private groupMembersService: GroupMembersService,
+    private groupsService: GroupsService,
+    private paymentDetailMapper: PaymentDetailMapper,
+  ) {}
 
   @Post()
-  async create(@Body() createPaymentDetailDto: CreatePaymentDetailDto, @Param('groupId') groupId, @Param('memberId') memberId) {
+  async create(
+    @Body() createPaymentDetailDto: CreatePaymentDetailDto,
+    @Param('groupId') groupId: string,
+    @Param('memberId') memberId: string,
+  ) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
@@ -22,13 +37,19 @@ export class PaymentDetailsController {
       throw new HttpException('Group member not found', HttpStatus.NOT_FOUND);
     }
 
-    const insertionResult = await this.paymentDetailsService.create(createPaymentDetailDto, memberId);
+    const insertionResult = await this.paymentDetailsService.create(
+      createPaymentDetailDto,
+      memberId,
+    );
 
     return this.paymentDetailMapper.entityFromDb(insertionResult);
   }
 
   @Get()
-  async findAll(@Param('groupId') groupId, @Param('memberId') memberId) {
+  async findAll(
+    @Param('groupId') groupId: string,
+    @Param('memberId') memberId: string,
+  ) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
@@ -39,7 +60,11 @@ export class PaymentDetailsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Param('groupId') groupId, @Param('memberId') memberId) {
+  async findOne(
+    @Param('id') id: string,
+    @Param('groupId') groupId: string,
+    @Param('memberId') memberId: string,
+  ) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
@@ -58,7 +83,11 @@ export class PaymentDetailsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string, @Param('groupId') groupId, @Param('memberId') memberId) {
+  async remove(
+    @Param('id') id: string,
+    @Param('groupId') groupId: string,
+    @Param('memberId') memberId: string,
+  ) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }

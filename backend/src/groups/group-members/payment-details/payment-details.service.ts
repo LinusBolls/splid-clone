@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePaymentDetailDto } from './dto/create-payment-detail.dto';
-import {PrismaClient} from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -11,7 +11,7 @@ export class PaymentDetailsService {
       data: {
         ...createPaymentDetailDto,
         detail: JSON.stringify(createPaymentDetailDto.detail),
-        groupMemberId: memberId
+        groupMemberId: memberId,
       },
     });
   }
@@ -19,7 +19,7 @@ export class PaymentDetailsService {
   findAll(memberId: string) {
     return prisma.groupMemberPaymentDetail.findMany({
       where: {
-        groupMemberId: memberId
+        groupMemberId: memberId,
       },
     });
   }
@@ -27,25 +27,25 @@ export class PaymentDetailsService {
   findOne(id: string) {
     return prisma.groupMemberPaymentDetail.findFirst({
       where: {
-        id
+        id,
       },
     });
   }
 
   async exists(id: string) {
     return (
-        (await prisma.groupMemberPaymentDetail.findFirst({
-          where: {
-            id,
-          },
-        })) !== null
+      (await prisma.groupMemberPaymentDetail.findFirst({
+        where: {
+          id,
+        },
+      })) !== null
     );
   }
 
   remove(id: string) {
     return prisma.groupMemberPaymentDetail.delete({
       where: {
-        id
+        id,
       },
     });
   }
@@ -53,7 +53,7 @@ export class PaymentDetailsService {
   removeByMemberId(groupMemberId: string) {
     return prisma.groupMemberPaymentDetail.deleteMany({
       where: {
-        groupMemberId
+        groupMemberId,
       },
     });
   }
