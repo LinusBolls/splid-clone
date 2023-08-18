@@ -1,21 +1,60 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePaymentDetailDto } from './dto/create-payment-detail.dto';
+import {PrismaClient} from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 @Injectable()
 export class PaymentDetailsService {
-  create(createPaymentDetailDto: CreatePaymentDetailDto) {
-    return 'This action adds a new paymentDetail';
+  create(createPaymentDetailDto: CreatePaymentDetailDto, memberId: string) {
+    return prisma.groupMemberPaymentDetail.create({
+      data: {
+        ...createPaymentDetailDto,
+        detail: JSON.stringify(createPaymentDetailDto.detail),
+        groupMemberId: memberId
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all paymentDetails`;
+  findAll(memberId: string) {
+    return prisma.groupMemberPaymentDetail.findMany({
+      where: {
+        groupMemberId: memberId
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} paymentDetail`;
+  findOne(id: string) {
+    return prisma.groupMemberPaymentDetail.findFirst({
+      where: {
+        id
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} paymentDetail`;
+  async exists(id: string) {
+    return (
+        (await prisma.groupMemberPaymentDetail.findFirst({
+          where: {
+            id,
+          },
+        })) !== null
+    );
+  }
+
+  remove(id: string) {
+    return prisma.groupMemberPaymentDetail.delete({
+      where: {
+        id
+      },
+    });
+  }
+
+  removeByMemberId(groupMemberId: string) {
+    return prisma.groupMemberPaymentDetail.deleteMany({
+      where: {
+        groupMemberId
+      },
+    });
   }
 }

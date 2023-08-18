@@ -1,10 +1,19 @@
-import { IsNotEmpty } from 'class-validator';
+import {IsNotEmpty, IsOptional} from 'class-validator';
 
 export class CreatePaymentDetailDto {
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
   @IsNotEmpty()
-  type: string;
+  type: keyof typeof Type;
   @IsNotEmpty()
-  content: object;
+  detail: PayPalPaymentDetailDto | IbanPaymentDetailDto
+}
+
+interface PayPalPaymentDetailDto {
+  userName: string
+}
+
+interface IbanPaymentDetailDto {
+  iban: string
+  bic?: string
 }

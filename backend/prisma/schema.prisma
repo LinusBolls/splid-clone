@@ -45,8 +45,8 @@ model GroupMemberPaymentDetail {
   updatedAt DateTime @updatedAt
 
   type String
-  name String
-  content String
+  name String?
+  detail String
 
   groupMember    GroupMember                @relation(fields: [groupMemberId], references: [id])
   groupMemberId  String
