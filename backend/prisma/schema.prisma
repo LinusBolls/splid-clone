@@ -113,7 +113,7 @@ model SubExpense {
   currency               String
 
   expense     Expense              @relation(fields: [expenseId], references: [id])
-  groupMember GroupMemberExpense[]
+  groupMemberExpense GroupMemberExpense[]
   expenseId   String
 }
 
