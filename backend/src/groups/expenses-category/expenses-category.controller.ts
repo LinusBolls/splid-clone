@@ -11,7 +11,7 @@ import { ExpensesCategoryService } from './expenses-category.service';
 import { CreateExpensesCategoryDto } from './dto/create-expenses-category.dto';
 import { UpdateExpensesCategoryDto } from './dto/update-expenses-category.dto';
 
-@Controller('/groups/:groupid/expenses/:expenseid/expenses-category')
+@Controller('/groups/:groupid/expenses-category')
 export class ExpensesCategoryController {
   constructor(
     private readonly expensesCategoryService: ExpensesCategoryService,
@@ -32,7 +32,7 @@ export class ExpensesCategoryController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.expensesCategoryService.findOne(+id);
+    return this.expensesCategoryService.findOne(id);
   }
 
   @Patch(':id')
@@ -40,11 +40,11 @@ export class ExpensesCategoryController {
     @Param('id') id: string,
     @Body() updateExpensesCategoryDto: UpdateExpensesCategoryDto,
   ) {
-    return this.expensesCategoryService.update(+id, updateExpensesCategoryDto);
+    return this.expensesCategoryService.update(id, updateExpensesCategoryDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.expensesCategoryService.remove(+id);
+    return this.expensesCategoryService.remove(id);
   }
 }

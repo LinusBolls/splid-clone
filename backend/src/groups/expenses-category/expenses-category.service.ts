@@ -18,6 +18,23 @@ export class ExpensesCategoryService {
     });
   }
 
+  async addCategoryToExpense(expenseId: string, categoryId: string) {
+    await prisma.mappingExpenseCategory.create({
+      data: {
+        expenseId,
+        expenseCategoryId: categoryId
+      }
+    })
+  }
+
+  async deleteCategoryMappingByExpenseId(expenseId: string) {
+    await prisma.mappingExpenseCategory.deleteMany({
+      where: {
+        expenseId
+      }
+    })
+  }
+
   async initalizeDefaultCategories(groupId: string) {
     await prisma.expenseCategory.createMany({
       data: [
@@ -38,18 +55,33 @@ export class ExpensesCategoryService {
   }
 
   findAll() {
-    return `This action returns all expensesCategory`;
+    return prisma.expenseCategory.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} expensesCategory`;
+  findOne(id: string) {
+    return prisma.expenseCategory.findFirst({
+      where: {
+        id
+      }
+    });
   }
 
-  update(id: number, updateExpensesCategoryDto: UpdateExpensesCategoryDto) {
-    return `This action updates a #${id} expensesCategory`;
+  update(id: string, updateExpensesCategoryDto: UpdateExpensesCategoryDto) {
+    return prisma.expenseCategory.update({
+      where: {
+        id
+      },
+      data: {
+        ...updateExpensesCategoryDto
+      }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} expensesCategory`;
+  remove(id: string) {
+    return prisma.expenseCategory.delete({
+      where: {
+        id
+      }
+    });
   }
 }

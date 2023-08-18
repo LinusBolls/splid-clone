@@ -2,16 +2,18 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { ExpensesCategoryService } from './expenses/expenses-category/expenses-category.service';
 import { CurrenciesService } from '../currencies/currencies.service';
+import { ExpensesService } from './expenses/expenses.service';
+import { ExpensesCategoryService } from './expenses-category/expenses-category.service';
 
 const prisma = new PrismaClient();
 
 @Injectable()
 export class GroupsService {
   constructor(
-    private expenseCategoryService: ExpensesCategoryService,
+    private readonly expenseCategoryService: ExpensesCategoryService,
     private readonly currenciesService: CurrenciesService,
+    private readonly expenseService: ExpensesService,
   ) {}
   async create(createGroupDto: CreateGroupDto) {
     if (
@@ -30,7 +32,7 @@ export class GroupsService {
       },
     });
 
-    this.expenseCategoryService.initalizeDefaultCategories(group.id);
+    await this.expenseCategoryService.initalizeDefaultCategories(group.id);
 
     return group;
   }
@@ -62,7 +64,10 @@ export class GroupsService {
 
   async remove(id: string) {
     try {
-      this.expenseCategoryService.deleteCategoriesByGroupId(id);
+      
+      await this.expenseService.removeAllExpensesAndMappedCategoriesByGroupId(id);
+
+      await this.expenseCategoryService.deleteCategoriesByGroupId(id);
 
       await prisma.group.delete({
         where: {
