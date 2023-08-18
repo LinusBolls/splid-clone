@@ -6,45 +6,92 @@ import {
   Patch,
   Param,
   Delete,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ExpensesCategoryService } from './expenses-category.service';
 import { CreateExpensesCategoryDto } from './dto/create-expenses-category.dto';
 import { UpdateExpensesCategoryDto } from './dto/update-expenses-category.dto';
+import { GroupsService } from '../groups.service';
 
 @Controller('/groups/:groupid/expenses-category')
 export class ExpensesCategoryController {
   constructor(
     private readonly expensesCategoryService: ExpensesCategoryService,
+    private readonly groupsService: GroupsService,
   ) {}
 
   @Post()
-  create(
-    @Param('groupid') id: string,
+  async create(
+    @Param('groupid') groupId: string,
     @Body() createExpensesCategoryDto: CreateExpensesCategoryDto,
   ) {
-    return this.expensesCategoryService.create(createExpensesCategoryDto, id);
+    if (!(await this.groupsService.exists(groupId))) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.expensesCategoryService.create(createExpensesCategoryDto, groupId);
   }
 
   @Get()
-  findAll() {
-    return this.expensesCategoryService.findAll();
+  async findAll(
+    @Param('groupid') groupId: string,
+  ) {
+    if (!(await this.groupsService.exists(groupId))) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.expensesCategoryService.findAll(groupId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.expensesCategoryService.findOne(id);
+  async findOne(@Param('id') id: string,@Param('groupid') groupId: string) {
+    console.log(groupId);
+    if (!(await this.groupsService.exists(groupId))) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    const findResult = await this.expensesCategoryService.findOne(id, groupId);
+
+    if (findResult === null) {
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    }
+
+    return findResult;
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
+    @Param('groupid') groupId: string,
     @Body() updateExpensesCategoryDto: UpdateExpensesCategoryDto,
   ) {
-    return this.expensesCategoryService.update(id, updateExpensesCategoryDto);
+    if (!(await this.groupsService.exists(groupId))) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!(await this.expensesCategoryService.exists(id, groupId))) {
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.expensesCategoryService.update(id, updateExpensesCategoryDto, groupId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.expensesCategoryService.remove(id);
+  async remove(@Param('id') id: string,@Param('groupid') groupId: string) {
+    if (!(await this.groupsService.exists(groupId))) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!(await this.expensesCategoryService.exists(id, groupId))) {
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      const findResult = await this.expensesCategoryService.remove(id, groupId);
+      return findResult;
+    }catch (e){
+      throw new HttpException('Category is associated to Expenses', HttpStatus.NOT_FOUND);
+    }
   }
 }
