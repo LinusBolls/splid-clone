@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateExpensesCategoryDto } from './dto/create-expenses-category.dto';
 import { UpdateExpensesCategoryDto } from './dto/update-expenses-category.dto';
 import { PrismaClient } from '@prisma/client';
+import { throws } from 'assert';
 const prisma = new PrismaClient();
 
 @Injectable()
@@ -54,22 +55,38 @@ export class ExpensesCategoryService {
     });
   }
 
-  findAll() {
-    return prisma.expenseCategory.findMany();
+  findAll(groupId: string) {
+    return prisma.expenseCategory.findMany({
+      where: {
+        groupId
+      }
+    });
   }
 
-  findOne(id: string) {
+  findOne(id: string, groupId: string) {
     return prisma.expenseCategory.findFirst({
       where: {
         id,
+        groupId
       },
     });
   }
 
-  update(id: string, updateExpensesCategoryDto: UpdateExpensesCategoryDto) {
+  async exists(id: string, groupId: string){
+    return (
+      (await prisma.expenseCategory.findFirst({
+        where: {
+          id,
+          groupId
+        },
+      })) !== null
+    );
+  }
+  update(id: string, updateExpensesCategoryDto: UpdateExpensesCategoryDto, groupId: string) {
     return prisma.expenseCategory.update({
       where: {
         id,
+        groupId
       },
       data: {
         ...updateExpensesCategoryDto,
@@ -77,10 +94,16 @@ export class ExpensesCategoryService {
     });
   }
 
-  remove(id: string) {
+  async remove(id: string, groupId: string) {
+    const findResult = await prisma.mappingExpenseCategory.findMany();
+    if (findResult.length > 0) {
+      throw new Error("Category is associated to Expenses");
+    }
+
     return prisma.expenseCategory.delete({
       where: {
         id,
+        groupId
       },
     });
   }

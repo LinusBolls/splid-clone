@@ -18,12 +18,12 @@ export class GroupMembersController {
   constructor(
     private readonly groupMembersService: GroupMembersService,
     private groupsService: GroupsService,
-  ) {}
+  ) { }
 
   @Post()
   async create(
     @Body() createGroupMemberDto: CreateGroupMemberDto,
-    @Param('groupId') groupId,
+    @Param('groupId') groupId: string,
   ) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
@@ -33,7 +33,7 @@ export class GroupMembersController {
   }
 
   @Get()
-  async findAll(@Param('groupId') groupId) {
+  async findAll(@Param('groupId') groupId: string) {
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
@@ -42,7 +42,7 @@ export class GroupMembersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Param('groupId') groupId) {
+  async findOne(@Param('id') id: string, @Param('groupId') groupId: string) {
     const findResult = await this.groupMembersService.findOne(id, groupId);
 
     if (findResult === null) {
@@ -54,7 +54,7 @@ export class GroupMembersController {
 
   @Delete(':id')
   @HttpCode(204)
-  async remove(@Param('id') id: string, @Param('groupId') groupId) {
+  async remove(@Param('id') id: string, @Param('groupId') groupId: string) {
     const deletionResult = await this.groupMembersService.remove(id, groupId);
 
     if (deletionResult === null) {
