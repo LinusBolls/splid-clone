@@ -9,21 +9,20 @@ const prisma = new PrismaClient();
 export class ExpensesService {
   constructor(private categoryService: ExpensesCategoryService) {}
 
-
   async create(createExpenseDto: CreateExpenseDto, groupId: string) {
     const expense = await prisma.expense.create({
       data: {
         name: createExpenseDto.name,
         description: createExpenseDto.description,
         location: createExpenseDto.location,
-        groupId
+        groupId,
       },
     });
 
     for (const category of createExpenseDto.categories) {
       await this.categoryService.addCategoryToExpense(expense.id, category.id);
     }
-    
+
     return expense;
   }
 
@@ -55,9 +54,9 @@ export class ExpensesService {
   async removeAllExpensesAndMappedCategoriesByGroupId(groupId: string) {
     const expenses = await prisma.expense.findMany({
       where: {
-        groupId
-      }
-    })
+        groupId,
+      },
+    });
 
     for (const expense of expenses) {
       await this.categoryService.deleteCategoryMappingByExpenseId(expense.id);
@@ -65,13 +64,12 @@ export class ExpensesService {
 
     await prisma.expense.deleteMany({
       where: {
-        groupId
-      }
-    })
+        groupId,
+      },
+    });
   }
 
   async remove(id: string) {
-
     await this.categoryService.deleteCategoryMappingByExpenseId(id);
 
     return prisma.expense.delete({

@@ -1,6 +1,6 @@
-import {Body, Controller, Delete, Get, Param, Post} from '@nestjs/common';
-import {PaymentDetailsService} from './payment-details.service';
-import {CreatePaymentDetailDto} from './dto/create-payment-detail.dto';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { PaymentDetailsService } from './payment-details.service';
+import { CreatePaymentDetailDto } from './dto/create-payment-detail.dto';
 
 @Controller('/groups/:groupId/group-members/:memberId/payment-details')
 export class PaymentDetailsController {

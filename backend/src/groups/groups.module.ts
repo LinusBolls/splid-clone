@@ -15,6 +15,6 @@ import { ExpensesCategoryModule } from './expenses-category/expenses-category.mo
     ExpensesCategoryModule,
     GroupMembersModule,
   ],
-  exports: [GroupsService]
+  exports: [GroupsService],
 })
 export class GroupsModule {}

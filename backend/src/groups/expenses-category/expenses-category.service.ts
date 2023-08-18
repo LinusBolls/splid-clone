@@ -22,17 +22,17 @@ export class ExpensesCategoryService {
     await prisma.mappingExpenseCategory.create({
       data: {
         expenseId,
-        expenseCategoryId: categoryId
-      }
-    })
+        expenseCategoryId: categoryId,
+      },
+    });
   }
 
   async deleteCategoryMappingByExpenseId(expenseId: string) {
     await prisma.mappingExpenseCategory.deleteMany({
       where: {
-        expenseId
-      }
-    })
+        expenseId,
+      },
+    });
   }
 
   async initalizeDefaultCategories(groupId: string) {
@@ -61,27 +61,27 @@ export class ExpensesCategoryService {
   findOne(id: string) {
     return prisma.expenseCategory.findFirst({
       where: {
-        id
-      }
+        id,
+      },
     });
   }
 
   update(id: string, updateExpensesCategoryDto: UpdateExpensesCategoryDto) {
     return prisma.expenseCategory.update({
       where: {
-        id
+        id,
       },
       data: {
-        ...updateExpensesCategoryDto
-      }
+        ...updateExpensesCategoryDto,
+      },
     });
   }
 
   remove(id: string) {
     return prisma.expenseCategory.delete({
       where: {
-        id
-      }
+        id,
+      },
     });
   }
 }

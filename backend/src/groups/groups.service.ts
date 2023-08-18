@@ -54,11 +54,13 @@ export class GroupsService {
   }
 
   async exists(id: string) {
-    return await prisma.group.findFirst({
-      where: {
-        id,
-      },
-    }) !== null;
+    return (
+      (await prisma.group.findFirst({
+        where: {
+          id,
+        },
+      })) !== null
+    );
   }
 
   update(id: string, updateGroupDto: UpdateGroupDto) {
@@ -72,8 +74,9 @@ export class GroupsService {
 
   async remove(id: string) {
     try {
-      
-      await this.expenseService.removeAllExpensesAndMappedCategoriesByGroupId(id);
+      await this.expenseService.removeAllExpensesAndMappedCategoriesByGroupId(
+        id,
+      );
 
       await this.expenseCategoryService.deleteCategoriesByGroupId(id);
 
