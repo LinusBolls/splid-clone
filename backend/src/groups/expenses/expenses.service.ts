@@ -26,16 +26,32 @@ export class ExpensesService {
     return expense;
   }
 
-  findAll() {
-    return prisma.expense.findMany();
+  findAll(groupId: string) {
+    return prisma.expense.findMany({
+      where: {
+        groupId
+      }
+    });
   }
 
-  findOne(id: string) {
+  findOne(id: string, groupId: string) {
     return prisma.expense.findFirst({
       where: {
-        id: id,
+        id,
+        groupId
       },
     });
+  }
+
+  async exists(id: string, groupId: string) {
+    return (
+      (await prisma.expense.findFirst({
+        where: {
+          id,
+          groupId
+        },
+      })) !== null
+    );
   }
 
   async update(id: string, updateExpenseDto: UpdateExpenseDto) {
