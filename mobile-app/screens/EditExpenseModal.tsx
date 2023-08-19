@@ -1,45 +1,56 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Swiper from 'react-native-swiper';
 
 import ModalDragHandle from '../components/ModalDragHandle';
 import SubexpenseInfo from '../components/SubexpenseInfo';
 import SwiperHeader from '../components/SwiperHeader';
 import { Text, View } from '../components/Themed';
-import useExpenses from '../hooks/useExpenses';
+import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
+import { useExpenseDraftStore } from '../stores/expenseDraftStore';
+import { useExpensesStore } from '../stores/expensesStore';
+import { useGroupMembersStore } from '../stores/groupMembersStore';
+import { useNavigation } from '../stores/navigationStore';
 
 const formatPriceEur = (price: number) =>
   price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
 
-export default function EditExpenseModal() {
-  const {
-    getActiveExpense,
-    subExpenses,
-    groupMembers,
-    removeSubexpense,
-    setSubexpenseTitle,
-    setSubexpensePrice,
-    addGainerToSubexpense,
-    removeGainerFromSubexpense,
-  } = useExpenses((s) => s);
+export default function EditExpenseModal({ navigation }: any) {
+  const navigationStore = useNavigation();
 
-  const [currentItemIdx, setCurrentItemIdx] = useState(0);
+  const expensesDraftStore = useExpenseDraftStore();
 
-  const activeExpense = getActiveExpense()!;
+  const activeSubexpenses = expensesDraftStore.subexpenses;
 
-  const activeSubExpenses = activeExpense.subExpenseIds.map(
-    (i) => subExpenses.find((j) => j.id === i)!
+  const activeSubexpenseIdx = activeSubexpenses.findIndex(
+    (i) => i.id === navigationStore.activeSubexpenseId
   );
 
+  if (activeSubexpenseIdx === -1) {
+    navigationStore.actions.setActiveSubexpenseId(activeSubexpenses[0]?.id);
+  }
+  function onSwiped(expenseIdx: number) {
+    navigationStore.actions.setActiveSubexpenseId(
+      activeSubexpenses[expenseIdx].id
+    );
+  }
+  const membersStore = useGroupMembersStore();
+
+  const groupMembers = membersStore.members.filter(
+    (i) => i.groupId === navigationStore.activeGroupId
+  );
   const [selectPrice, setSelectPrice] = useState(false);
 
-  function onSwiped(expenseIdx: number) {
-    setCurrentItemIdx(expenseIdx);
-  }
+  const activeExpenseTotalAmount = expensesDraftStore.subexpenses.reduce(
+    (sum, k) => sum + k.price,
+    0
+  );
 
   return (
     <View
       style={{
         height: '100%',
+
+        backgroundColor: 'white',
       }}
     >
       <ModalDragHandle />
@@ -63,7 +74,7 @@ export default function EditExpenseModal() {
             fontSize: 16,
           }}
         >
-          Total ({activeSubExpenses.length} items)
+          Total ({activeSubexpenses.length} items)
         </Text>
         <Text
           style={{
@@ -71,53 +82,69 @@ export default function EditExpenseModal() {
             fontSize: 13,
           }}
         >
-          {formatPriceEur(activeExpense.price)}
+          {formatPriceEur(activeExpenseTotalAmount)}
         </Text>
       </View>
       <SwiperHeader
-        currentItemIdx={currentItemIdx}
-        numItems={activeSubExpenses.length}
+        currentItemIdx={activeSubexpenseIdx}
+        numItems={activeSubexpenses.length}
       />
       <Swiper
         showsButtons={false}
         showsPagination={false}
         loop={false}
+        index={activeSubexpenseIdx}
         onIndexChanged={onSwiped}
       >
-        {activeSubExpenses.map((i, idx) => {
-          const gainers = groupMembers.map((m) => ({
-            title: m.displayName,
-            value: m.id,
-            isActive: i.gainerIds.includes(m.id),
-            icon: (
-              <View
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 24,
-                  height: 24,
-                  marginRight: 4,
+        {activeSubexpenses.map((i, idx) => {
+          const gainers = groupMembers.map((m) => {
+            const share = i.shares.find((s) => s.memberId === m.id);
 
-                  borderRadius: 99,
-                  backgroundColor: '#C4C4C4',
-                }}
-              />
-            ),
-          }));
+            return {
+              title: m.displayName || 'Unknown',
+              value: m.id,
+              isActive: share != null,
+              icon: (
+                <View
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 24,
+                    height: 24,
+                    marginRight: 4,
 
-          const isVisible = currentItemIdx === idx;
+                    borderRadius: 99,
+                    backgroundColor: '#C4C4C4',
+                  }}
+                />
+              ),
+            };
+          });
+
+          const isVisible = activeSubexpenseIdx === idx;
 
           return (
             <SubexpenseInfo
+              primaryButtonAction={
+                idx === activeSubexpenses.length - 1
+                  ? 'CREATE_NEW'
+                  : 'GO_TO_NEXT'
+              }
+              onPrimaryButtonPress={() => {
+                if (idx === activeSubexpenses.length - 1) {
+                  expensesDraftStore.actions.createEmptySubexpense();
+                }
+                onSwiped(idx + 1);
+              }}
               expenseTitle={i.title}
               price={i.price}
-              percentageOfTotal={100 / (activeExpense.price / i.price)}
+              percentageOfTotal={100 / (activeExpenseTotalAmount / i.price)}
               selectPrice={isVisible && selectPrice}
               selectTitle={isVisible && i.title.length < 1}
               gainers={gainers}
               onTitleBlur={() => {
                 if (
-                  !activeSubExpenses[currentItemIdx].price &&
+                  !activeSubexpenses[activeSubexpenseIdx].price &&
                   i.title.length > 0
                 ) {
                   setSelectPrice(true);
@@ -125,14 +152,24 @@ export default function EditExpenseModal() {
                   setTimeout(setSelectPrice, 0, false);
                 }
               }}
-              onDelete={() => removeSubexpense(activeExpense.id, i.id)}
-              onPriceChange={(value) => setSubexpensePrice(i.id, value)}
-              onTitleChange={(value) => setSubexpenseTitle(i.id, value)}
+              onDelete={() => expensesDraftStore.actions.deleteSubexpense(i.id)}
+              onPriceChange={(value) =>
+                expensesDraftStore.actions.setSubexpensePrice(i.id, value)
+              }
+              onTitleChange={(value) =>
+                expensesDraftStore.actions.setSubexpenseTitle(i.id, value)
+              }
               onGainerSelected={(gainer) =>
-                addGainerToSubexpense(i.id, gainer.value)
+                expensesDraftStore.actions.addSubexpenseShare(
+                  i.id,
+                  gainer.value
+                )
               }
               onGainerUnselected={(gainer) =>
-                removeGainerFromSubexpense(i.id, gainer.value)
+                expensesDraftStore.actions.removeSubexpenseShare(
+                  i.id,
+                  gainer.value
+                )
               }
             />
           );

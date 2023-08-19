@@ -1,41 +1,78 @@
-import { useRef, useState } from 'react';
-import {
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
+import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import ChipMultiselect from '../components/ChipMultiselect';
 import ExpenseList from '../components/ExpenseList';
-import useExpenses from '../hooks/useExpenses';
+import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
+import { useExpenseDraftStore } from '../stores/expenseDraftStore';
+import { useExpensesStore } from '../stores/expensesStore';
+import { useGroupMembersStore } from '../stores/groupMembersStore';
+import { useNavigation } from '../stores/navigationStore';
 
 export default function EditExpenseScreen({ navigation }: any) {
   const [isDatepickerOpen, setIsDatepickerOpen] = useState(false);
 
-  const {
-    addEmptySubexpense,
-    expenseCategories: categories,
-    getActiveExpense,
-    subExpenses,
-    groupMembers,
-    setExpensePrice,
-    setExpenseDate,
-    addCategoryToExpense,
-    removeCategoryFromExpense,
-    splitExpenseIntoMultiple,
-    removeSubexpense,
-  } = useExpenses((s) => s);
+  const navigationStore = useNavigation();
 
-  const activeExpense = getActiveExpense();
+  const onItemClick = (item: { id: string }) => {
+    navigationStore.actions.setActiveSubexpenseId(item.id);
 
-  const onItemClick = () => navigation.navigate('Modal');
+    navigation.navigate('Modal');
+  };
 
-  if (!activeExpense) return;
+  const draftStore = useExpenseDraftStore();
 
-  const titleInputRef = useRef(null);
+  const categoriesStore = useExpenseCategoriesStore();
+
+  const expensesStore = useExpensesStore();
+
+  const membersStore = useGroupMembersStore();
+
+  const titleInputRef = useRef<TextInput>(null);
+
+  const members = membersStore.members.filter(
+    (i) => i.groupId === navigationStore.activeGroupId
+  );
+  const categories = categoriesStore.categories.filter(
+    (i) => i.groupId === navigationStore.activeGroupId
+  );
+
+  const totalAmount = draftStore.subexpenses.reduce(
+    (sum, i) => sum + i.price,
+    0
+  );
+
+  useEffect(() => {
+    if (titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, []);
+
+  function onCreate() {
+    // TODO: validate
+
+    const draft = draftStore.actions.getDraft();
+
+    expensesStore.actions.createSubexpenses(
+      draftStore.actions.getSubexpenseDrafts()
+    );
+    expensesStore.actions.createExpense(navigationStore.activeGroupId!, draft);
+
+    draftStore.actions.clear();
+
+    navigation.goBack();
+  }
+  function onCancel() {
+    draftStore.actions.clear();
+
+    navigation.goBack();
+  }
+  const sponsors = draftStore.sponsorShares.map((i) =>
+    members.find((j) => j.id === i.memberId)
+  );
 
   return (
     <View
@@ -56,6 +93,46 @@ export default function EditExpenseScreen({ navigation }: any) {
           height: 48,
         }}
       ></View>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Pressable
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            width: 48,
+            height: 48,
+          }}
+        >
+          <MaterialIcons name="attach-file" size={20} color="#222" />
+        </Pressable>
+        <Pressable
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            width: 48,
+            height: 48,
+          }}
+        >
+          <MaterialIcons name="photo-camera" size={20} color="#222" />
+        </Pressable>
+        <Pressable
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            width: 48,
+            height: 48,
+          }}
+        >
+          <MaterialIcons name="insert-photo" size={20} color="#222" />
+        </Pressable>
+      </View>
       <TextInput
         multiline
         blurOnSubmit
@@ -68,8 +145,8 @@ export default function EditExpenseScreen({ navigation }: any) {
 
           textAlign: 'center',
         }}
-        // onChangeText={(text) => alert(text)}
-        // value={meetingTitle}
+        onChangeText={draftStore.actions.setTitle}
+        value={draftStore.title}
       />
       <TextInput
         multiline
@@ -85,25 +162,25 @@ export default function EditExpenseScreen({ navigation }: any) {
           marginTop: 8,
           marginBottom: 16,
         }}
-        // onChangeText={(text) => alert(text)}
-        // value={meetingTitle}
+        onChangeText={draftStore.actions.setDescription}
+        value={draftStore.description}
       />
       <ChipMultiselect
         options={categories.map((i) => ({
-          ...i,
-          isActive: activeExpense.categoryIds.includes(i.id),
+          title: i.displayName,
+          isActive: draftStore.categoryIds.includes(i.id),
           value: i.id,
         }))}
         onOptionSelect={(option) =>
-          addCategoryToExpense(activeExpense.id, option.value as string)
+          draftStore.actions.addCategory(option.value)
         }
         onOptionUnselect={(option) =>
-          removeCategoryFromExpense(activeExpense.id, option.value as string)
+          draftStore.actions.removeCategory(option.value)
         }
       />
       <View
         style={{
-          marginVertical: 16,
+          marginTop: 16,
 
           backgroundColor: 'transparent',
         }}
@@ -128,7 +205,11 @@ export default function EditExpenseScreen({ navigation }: any) {
               backgroundColor: 'transparent',
             }}
           >
-            <MaterialIcons name="calendar-month" size={20} color="#222" />
+            <MaterialCommunityIcon
+              name="calendar-month-outline"
+              size={20}
+              color="#222"
+            />
           </View>
           <Text
             style={{
@@ -137,42 +218,125 @@ export default function EditExpenseScreen({ navigation }: any) {
               color: '#222',
             }}
           >
-            {activeExpense.date.toDateString()}
+            {draftStore.date.toDateString()}
           </Text>
         </Pressable>
+      </View>
+      <View
+        style={{
+          marginBottom: 16,
+
+          backgroundColor: 'transparent',
+        }}
+      >
+        <Pressable
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+
+            paddingRight: 16,
+          }}
+          onPress={() => alert('TODO: popup to select sponsors')}
+        >
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+
+              width: 48,
+              height: 48,
+
+              backgroundColor: 'transparent',
+            }}
+          >
+            <MaterialCommunityIcon
+              name="account-circle-outline"
+              size={20}
+              color="#222"
+            />
+          </View>
+          <Text
+            style={{
+              fontSize: 13,
+
+              color: sponsors.length ? '#222' : '#888',
+            }}
+          >
+            {sponsors.length
+              ? sponsors.map((i) => i?.displayName || 'Unknown').join(', ')
+              : 'Who payed for this? (required)'}
+          </Text>
+        </Pressable>
+        <View
+          style={{
+            marginLeft: 48,
+          }}
+        >
+          <ChipMultiselect
+            options={members.map((i) => ({
+              title: i.displayName,
+              isActive: draftStore.sponsorShares.some(
+                (j) => j.memberId === i.id
+              ),
+              value: i.id,
+              icon: (
+                <View
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 24,
+                    height: 24,
+                    marginRight: 4,
+
+                    borderRadius: 99,
+                    backgroundColor: '#C4C4C4',
+                  }}
+                />
+              ),
+            }))}
+            onOptionSelect={(option) =>
+              draftStore.actions.addSponsorShare(option.value)
+            }
+            onOptionUnselect={(option) =>
+              draftStore.actions.removeSponsorShare(option.value)
+            }
+          />
+        </View>
       </View>
       <DatePicker
         modal
         mode="date"
         open={isDatepickerOpen}
-        date={activeExpense.date}
+        date={draftStore.date}
         onConfirm={(date) => {
           setIsDatepickerOpen(false);
-          setExpenseDate(activeExpense.id, date);
+          draftStore.actions.setDate(date);
         }}
         onCancel={() => {
           setIsDatepickerOpen(false);
         }}
       />
       <ExpenseList
-        totalAmount={activeExpense.price}
-        items={subExpenses
-          .filter((i) => activeExpense.subExpenseIds.includes(i.id))
-          .map((i) => ({
-            ...i,
-            gainers: i.gainerIds.map(
-              (j) => groupMembers.find((m) => m.id === j)!
-            ),
-          }))}
+        totalAmount={totalAmount}
+        items={draftStore.subexpenses.map((i) => ({
+          ...i,
+          gainers: i.shares.map(
+            (j) => members.find((m) => m.id === j.memberId)!
+          ),
+        }))}
         onItemClick={onItemClick}
-        onAddItem={() => addEmptySubexpense(activeExpense.id)}
-        onRemoveItem={(item) => removeSubexpense(activeExpense.id, item.id)}
-        onSplitIntoMultipleItems={() =>
-          splitExpenseIntoMultiple(activeExpense.id)
-        }
-        onTotalAmountChange={(value) =>
-          setExpensePrice(activeExpense.id, value)
-        }
+        onAddItem={() => {
+          draftStore.actions.createEmptySubexpense();
+
+          draftStore.actions.splitTotalEvenlyAcrossSubexpenses();
+        }}
+        onRemoveItem={(item) => draftStore.actions.deleteSubexpense(item.id)}
+        onSplitIntoMultipleItems={() => {
+          draftStore.actions.createEmptySubexpense();
+
+          draftStore.actions.splitTotalEvenlyAcrossSubexpenses();
+        }}
+        onTotalAmountChange={draftStore.actions.setTotalAmount}
       />
       <View
         style={{
@@ -185,7 +349,7 @@ export default function EditExpenseScreen({ navigation }: any) {
         }}
       >
         <Pressable
-          onPress={() => alert('cancelling')}
+          onPress={onCancel}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -216,7 +380,7 @@ export default function EditExpenseScreen({ navigation }: any) {
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => alert('saving')}
+          onPress={onCreate}
           style={{
             flexDirection: 'row',
             alignItems: 'center',

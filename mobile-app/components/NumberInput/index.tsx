@@ -13,6 +13,8 @@ export interface NumberInputProps {
   defaultValue?: number;
   value: number;
   onChange: (value: number) => void;
+
+  isStatic?: boolean;
 }
 export default forwardRef(function NumberInput(
   {
@@ -21,6 +23,7 @@ export default forwardRef(function NumberInput(
     defaultValue = 0,
     value,
     onChange,
+    isStatic = false,
   }: NumberInputProps,
   ref: LegacyRef<TextInput>
 ) {
@@ -64,10 +67,11 @@ export default forwardRef(function NumberInput(
 
           color: '#682BE9',
           fontSize: 16,
-          backgroundColor: '#E8E1F9',
+          backgroundColor: isStatic ? 'transparent' : '#E8E1F9',
         }}
         selectTextOnFocus
         keyboardType="numeric"
+        returnKeyType="done"
         onChangeText={(newValue) => setRawValue(newValue)}
         value={rawValue}
         maxLength={10} //setting limit of input
@@ -92,7 +96,6 @@ export default forwardRef(function NumberInput(
         >
           €
         </Text>
-        {/* <MaterialIcons name="euro" size={16} color="#682BE9" /> */}
       </View>
     </View>
   );

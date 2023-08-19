@@ -18,7 +18,7 @@ export interface Gainer {
   isActive: boolean;
 }
 
-export interface SubexpenseInfoProps {
+export interface ExpenseInfoProps {
   expenseTitle: string;
   price: number;
   percentageOfTotal: number;
@@ -37,7 +37,7 @@ export interface SubexpenseInfoProps {
   primaryButtonAction: 'GO_TO_NEXT' | 'CREATE_NEW';
   onPrimaryButtonPress: () => void;
 }
-export default function SubexpenseInfo({
+export default function ExpenseInfo({
   expenseTitle,
   price,
   percentageOfTotal,
@@ -55,7 +55,7 @@ export default function SubexpenseInfo({
 
   primaryButtonAction,
   onPrimaryButtonPress,
-}: SubexpenseInfoProps) {
+}: ExpenseInfoProps) {
   const titleInputRef = useRef<TextInput>(null);
   const priceInputRef = useRef<TextInput>(null);
 

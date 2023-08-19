@@ -17,7 +17,7 @@ export interface Item {
 }
 
 const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
+  price.toLocaleString(undefined, { minimumFractionDigits: 2 });
 
 const formatPercentage = (percentage: number) =>
   percentage.toLocaleString(undefined, { maximumFractionDigits: 0 }) + '%';
@@ -42,7 +42,7 @@ export default function ExpenseList({
   onSplitIntoMultipleItems,
   onTotalAmountChange,
 }: ExpenseListProps) {
-  const consistsOfMultiple = items.length > 0;
+  const consistsOfMultiple = items.length > 1;
 
   const title = consistsOfMultiple ? `Total (${items.length} items)` : 'Total';
 
@@ -77,6 +77,7 @@ export default function ExpenseList({
           {title}
         </Text>
         <NumberInput
+          isStatic={consistsOfMultiple}
           onChange={onTotalAmountChange}
           value={totalAmount}
           placeholder="Total amount"
@@ -94,116 +95,126 @@ export default function ExpenseList({
           <MaterialIcons name="add-circle-outline" size={20} color="#222" />
         </Pressable>
       </View>
-      {items.map((i) => (
-        <View
-          key={i.id}
-          style={{
-            flexDirection: 'row',
+      {consistsOfMultiple
+        ? items.map((i) => (
+            <View
+              key={i.id}
+              style={{
+                flexDirection: 'row',
 
-            height: 48,
-            paddingLeft: 16,
+                height: 48,
+                paddingLeft: 16,
 
-            backgroundColor: 'white',
+                backgroundColor: 'white',
 
-            marginTop: 1,
-          }}
-        >
-          <Pressable
-            style={{
-              justifyContent: 'center',
+                marginTop: 1,
+              }}
+            >
+              <Pressable
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
 
-              height: 48,
-              flexGrow: 1,
-            }}
-            onPress={() => onItemClick(i)}
-          >
-            <View>
-              {i.title.length ? (
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: '#222',
-                  }}
-                >
-                  {i.title}
-                </Text>
-              ) : (
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: '#888',
-                  }}
-                >
-                  Add item title... (required)
-                </Text>
-              )}
+                  height: 48,
+                  flexGrow: 1,
+                }}
+                onPress={() => onItemClick(i)}
+              >
+                <View>
+                  {i.title.length ? (
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        color: '#222',
+                      }}
+                    >
+                      {i.title}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        color: '#888',
+                      }}
+                    >
+                      Add item title... (required)
+                    </Text>
+                  )}
 
-              {i.gainers.length ? (
-                <Text
-                  style={{
-                    fontSize: 10,
-                    color: '#888',
-                  }}
-                >
-                  {i.gainers.map((j) => j.displayName).join(', ')}
-                </Text>
-              ) : null}
-            </View>
+                  {i.gainers.length ? (
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: '#888',
+                      }}
+                    >
+                      {i.gainers.map((j) => j.displayName).join(', ')}
+                    </Text>
+                  ) : null}
+                </View>
 
-            {i.price ? (
-              <View>
-                {i.title.length ? (
-                  <Text
+                {i.price ? (
+                  <View
                     style={{
-                      fontSize: 13,
-                      color: '#222',
+                      flexDirection: 'row',
+                      alignItems: 'center',
                     }}
                   >
-                    {i.title}
-                  </Text>
-                ) : (
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: '#888',
-                    }}
-                  >
-                    {formatPriceEur(i.price)}
-                  </Text>
-                )}
+                    <View
+                      style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
 
-                {i.gainers.length ? (
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      color: '#888',
-                    }}
-                  >
-                    {formatPercentage(100 / (100 / i.price))}
-                  </Text>
+                        width: 32,
+                        height: 32,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: '#222',
+                          fontSize: 13,
+                          fontWeight: '500',
+                        }}
+                      >
+                        €
+                      </Text>
+                    </View>
+                    <Text
+                      style={{
+                        color: '#222',
+
+                        paddingRight: 12,
+
+                        fontSize: 13,
+                        fontWeight: '500',
+                      }}
+                    >
+                      {formatPriceEur(i.price)}
+                    </Text>
+                  </View>
                 ) : null}
-              </View>
-            ) : null}
-          </Pressable>
-          <Pressable
-            onPress={() => onRemoveItem(i)}
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
+              </Pressable>
+              <Pressable
+                onPress={() => onRemoveItem(i)}
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
 
-              width: 48,
-              height: 48,
-            }}
-          >
-            <MaterialIcons
-              name="remove-circle-outline"
-              size={20}
-              color="#222"
-            />
-          </Pressable>
-        </View>
-      ))}
-      {!items.length && (
+                  width: 48,
+                  height: 48,
+                }}
+              >
+                <MaterialIcons
+                  name="remove-circle-outline"
+                  size={20}
+                  color="#222"
+                />
+              </Pressable>
+            </View>
+          ))
+        : null}
+      {!consistsOfMultiple && (
         <View
           style={{
             backgroundColor: 'white',

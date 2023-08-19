@@ -11,11 +11,13 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { maybeCompleteAuthSession } from 'expo-web-browser';
 import { ColorSchemeName } from 'react-native';
-import uuid from 'react-native-uuid';
 
-import ExpensesContext from '../contexts/expenses.context';
+import CreateNewGroup from '../screens/CreateNewGroup';
 import EditExpenseModal from '../screens/EditExpenseModal';
 import EditExpenseScreen from '../screens/EditExpenseScreen';
+import GroupOverviewScreen from '../screens/GroupOverviewScreen';
+import SwipeActivitiesModal from '../screens/SwipeActivitiesModal';
+import { useNavigation } from '../stores/navigationStore';
 import { RootStackParamList } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 
@@ -43,34 +45,46 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 maybeCompleteAuthSession();
 
 function RootNavigator() {
-  return (
-    <ExpensesContext.Provider
-      value={{
-        expenses: [
-          {
-            id: uuid.v4() as string,
+  const navigationStore = useNavigation();
 
-            title: '',
+  const activeGroupId = navigationStore.activeGroupId;
 
-            price: 3,
-          },
-        ],
-      }}
-    >
+  if (!activeGroupId) {
+    return (
       <Stack.Navigator>
         <Stack.Screen
-          name="Root"
-          component={EditExpenseScreen}
+          name="CreateGroup"
+          component={CreateNewGroup}
           options={{ headerShown: false }}
         />
-        <Stack.Group screenOptions={{ presentation: 'modal' }}>
-          <Stack.Screen
-            name="Modal"
-            component={EditExpenseModal}
-            options={{ headerShown: false }}
-          />
-        </Stack.Group>
       </Stack.Navigator>
-    </ExpensesContext.Provider>
+    );
+  }
+
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Root"
+        component={GroupOverviewScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CreateExpense"
+        component={EditExpenseScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Group screenOptions={{ presentation: 'modal' }}>
+        <Stack.Screen
+          name="Modal"
+          component={EditExpenseModal}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="SwipeActivitiesModal"
+          component={SwipeActivitiesModal}
+          options={{ headerShown: false }}
+        ></Stack.Screen>
+      </Stack.Group>
+    </Stack.Navigator>
   );
 }
