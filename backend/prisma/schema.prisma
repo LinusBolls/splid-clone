@@ -17,12 +17,13 @@ model Group {
 
   name        String
   description String?
-  inviteCode  String @unique
+  inviteCode  String  @unique
   currency    String
 
   expenses          Expense[]
   expenseCategories ExpenseCategory[]
   groupMembers      GroupMember[]
+  payments          Payment[]
 }
 
 model GroupMember {
@@ -37,6 +38,8 @@ model GroupMember {
   groupId        String
   expenses       GroupMemberExpense[]
   paymentDetails GroupMemberPaymentDetail[]
+  sent           Payment[]                  @relation("sent")
+  received       Payment[]                  @relation("received")
 }
 
 model GroupMemberPaymentDetail {
@@ -61,11 +64,11 @@ model Expense {
   description String?
   location    String?
 
-  assets                 ExpenseAsset[]
-  subExpenses            SubExpense[]
-  group                  Group                    @relation(fields: [groupId], references: [id])
-  groupId                String
-  categories             MappingExpenseCategory[]
+  assets      ExpenseAsset[]
+  subExpenses SubExpense[]
+  group       Group                    @relation(fields: [groupId], references: [id])
+  groupId     String
+  categories  MappingExpenseCategory[]
 }
 
 model ExpenseAsset {
@@ -110,7 +113,7 @@ model SubExpense {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name                   String
+  name String
 
   expenseAssets       ExpenseAsset[]
   expense             Expense              @relation(fields: [expenseId], references: [id])
@@ -124,9 +127,9 @@ model GroupMemberExpense {
   updatedAt DateTime @updatedAt
 
   amountReferenceCurrency Decimal
-  currency               String
-  amount Decimal
-  role   String
+  currency                String
+  amount                  Decimal
+  role                    GROUP_MEMBER_EXPENSE_ROLE
 
   subExpense    SubExpense  @relation(fields: [subExpenseId], references: [id])
   groupMember   GroupMember @relation(fields: [groupMemberId], references: [id])
@@ -159,4 +162,22 @@ model CurrencyRate {
   rateEurBase Decimal
 
   @@id([symbol, date])
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amountReferenceCurrency Decimal
+  currency                String
+  amount                  Decimal
+
+  sender     GroupMember @relation("sent", fields: [senderId], references: [id])
+  senderId   String
+  receiver   GroupMember @relation("received", fields: [receiverId], references: [id])
+  receiverId String
+
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
 }
