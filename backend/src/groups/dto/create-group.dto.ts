@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsOptional, Length} from 'class-validator';
+import { IsNotEmpty, IsOptional, Length } from 'class-validator';
 export class CreateGroupDto {
   @IsNotEmpty()
   name: string;

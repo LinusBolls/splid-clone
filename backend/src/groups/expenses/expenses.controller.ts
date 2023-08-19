@@ -1,10 +1,21 @@
-import {Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put} from '@nestjs/common';
-import {ExpensesService} from './expenses.service';
-import {CreateExpenseDto} from './dto/create-expense.dto';
-import {UpdateExpenseDto} from './dto/update-expense.dto';
-import {GroupsService} from '../groups.service';
-import {ExpenseCategoriesService} from '../expense-categories/expense-categories.service';
-import {ExpenseMapper} from "./mapping/expense.mapper";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { ExpensesService } from './expenses.service';
+import { CreateExpenseDto } from './dto/create-expense.dto';
+import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { GroupsService } from '../groups.service';
+import { ExpenseCategoriesService } from '../expense-categories/expense-categories.service';
+import { ExpenseMapper } from './mapping/expense.mapper';
 
 @Controller('/groups/:groupId/expenses')
 export class ExpensesController {
@@ -12,7 +23,7 @@ export class ExpensesController {
     private readonly expensesService: ExpensesService,
     private readonly groupsService: GroupsService,
     private readonly categoryService: ExpenseCategoriesService,
-    private readonly expenseMapper: ExpenseMapper
+    private readonly expenseMapper: ExpenseMapper,
   ) {}
 
   @Post()
@@ -81,8 +92,8 @@ export class ExpensesController {
     for (const categoryId of updateExpenseDto.categoryIds) {
       if (!(await this.categoryService.exists(categoryId, groupId))) {
         throw new HttpException(
-            `Category with the id: ${categoryId} doesn't exist`,
-            HttpStatus.FAILED_DEPENDENCY,
+          `Category with the id: ${categoryId} doesn't exist`,
+          HttpStatus.FAILED_DEPENDENCY,
         );
       }
     }

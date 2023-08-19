@@ -1,7 +1,7 @@
 export class ExpensesCategoryEntity {
-    id: string
-    createdAt: Date
-    updatedAt: Date
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
 
-    name: string
+  name: string;
 }

@@ -1,3 +1,3 @@
-import {CreateExpenseCategoryDto} from './create-expense-category.dto';
+import { CreateExpenseCategoryDto } from './create-expense-category.dto';
 
-export class UpdateExpenseCategoryDto extends CreateExpenseCategoryDto{}
+export class UpdateExpenseCategoryDto extends CreateExpenseCategoryDto {}

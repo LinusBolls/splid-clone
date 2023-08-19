@@ -1,20 +1,21 @@
-import { Big } from "big.js";
-import { IsNotEmpty } from "class-validator";
+import { Big } from 'big.js';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateGroupMemberExpenseDto {
   @IsNotEmpty()
   groupMemberId: string;
-  
-  @IsNotEmpty()
-  role: keyof typeof ROLE;
-
 
   @IsNotEmpty()
-  amount: Big
+  role: keyof typeof GROUP_MEMBER_EXPENSE_ROLE;
 
+  @IsNotEmpty()
+  amount: Big;
+
+  @IsNotEmpty()
+  currency: string;
 }
 
-const ROLE = {
-  SPONSOR: "SPONSOR",
-  GAINER: "GAINER",
-}
+export const GROUP_MEMBER_EXPENSE_ROLE = {
+  SPONSOR: 'SPONSOR',
+  GAINER: 'GAINER',
+} as const;

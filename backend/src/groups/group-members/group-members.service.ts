@@ -82,13 +82,13 @@ export class GroupMembersService {
 
   async removeAllByGroupId(groupId: string) {
     //TODO prisma transaction
-    for (const member of (await this.findAll(groupId))) {
+    for (const member of await this.findAll(groupId)) {
       await this.paymentDetailsService.removeByMemberId(member.id);
     }
 
     return prisma.groupMember.deleteMany({
       where: {
-        groupId
+        groupId,
       },
     });
   }
