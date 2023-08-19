@@ -3,11 +3,15 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { PrismaClient } from '@prisma/client';
 import { ExpensesCategoryService } from '../expenses-category/expenses-category.service';
+import { SubExpensesService } from './sub-expenses/sub-expenses.service';
 const prisma = new PrismaClient();
 
 @Injectable()
 export class ExpensesService {
-  constructor(private categoryService: ExpensesCategoryService) {}
+  constructor(
+    private readonly categoryService: ExpensesCategoryService,
+    private readonly subExpensesService: SubExpensesService,
+  ) {}
 
   async create(createExpenseDto: CreateExpenseDto, groupId: string) {
     const expense = await prisma.expense.create({
@@ -87,6 +91,9 @@ export class ExpensesService {
 
   async remove(id: string) {
     await this.categoryService.deleteCategoryMappingByExpenseId(id);
+
+    console.log(id);
+    await this.subExpensesService.removeSubExpensesBelongingToExpense(id);
 
     return prisma.expense.delete({
       where: {

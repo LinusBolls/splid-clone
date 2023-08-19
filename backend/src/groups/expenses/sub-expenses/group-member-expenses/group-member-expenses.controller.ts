@@ -15,16 +15,17 @@ import { UpdateGroupMemberExpenseDto } from './dto/update-group-member-expense.d
 import { GroupsService } from 'src/groups/groups.service';
 import { SubExpensesService } from '../sub-expenses.service';
 import { ExpensesService } from '../../expenses.service';
+import { GroupMembersService } from 'src/groups/group-members/group-members.service';
 
 @Controller(
-  '/groups/:groupid/expenses/:expenseid/sub-expense/:subexpenseid/group-member-expenses',
+  '/groups/:groupid/expenses/:expenseid/sub-expenses/:subexpenseid/group-member-expenses',
 )
 export class GroupMemberExpensesController {
   constructor(
     private readonly groupsService: GroupsService,
     private readonly subExpensesService: SubExpensesService,
     private readonly expensesService: ExpensesService,
-    private readonly groupMemberService: GroupsService,
+    private readonly groupMemberService: GroupMembersService,
     private readonly groupMemberExpensesService: GroupMemberExpensesService,
   ) {}
 
@@ -32,8 +33,11 @@ export class GroupMemberExpensesController {
   async create(
     @Param('groupid') groupId: string,
     @Param('expenseid') expenseId: string,
-    @Param('subExpenseId') subExpenseId: string,
-    @Body() createGroupMemberExpenseDto: CreateGroupMemberExpenseDto,
+    @Param('subexpenseid') subExpenseId: string,
+    @Body()
+    createGroupMemberExpenseDto:
+      | CreateGroupMemberExpenseDto
+      | CreateGroupMemberExpenseDto[],
   ) {
     const groupAndExpenseErr = await this.checkIfGroupExpenseAndSubExpenseExist(
       groupId,
@@ -42,11 +46,18 @@ export class GroupMemberExpensesController {
     );
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
-    if (!(await this.groupMemberService.exists(createGroupMemberExpenseDto.groupMemberId)))
+    let groupMemberExpenses: CreateGroupMemberExpenseDto[] = [];
+    if (Array.isArray(createGroupMemberExpenseDto))
+      groupMemberExpenses = createGroupMemberExpenseDto;
+    else groupMemberExpenses.push(createGroupMemberExpenseDto);
+
+    for (const groupMember of groupMemberExpenses) {
+      if (!(await this.groupMemberService.exists(groupMember.groupMemberId)))
         throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
+    }
 
     return this.groupMemberExpensesService.create(
-      createGroupMemberExpenseDto,
+      groupMemberExpenses,
       subExpenseId,
     );
   }
@@ -81,10 +92,16 @@ export class GroupMemberExpensesController {
     );
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
-    const findResult = await this.subExpensesService.findOne(id, subExpenseId)
+    const findResult = await this.groupMemberExpensesService.findOne(
+      id,
+      subExpenseId,
+    );
 
-    if (findResult === null) 
-      throw new HttpException('GroupMemberExpense not found', HttpStatus.NOT_FOUND);
+    if (findResult === null)
+      throw new HttpException(
+        'GroupMemberExpense not found',
+        HttpStatus.NOT_FOUND,
+      );
 
     return findResult;
   }
@@ -105,7 +122,10 @@ export class GroupMemberExpensesController {
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
     if (!(await this.groupMemberExpensesService.exists(id, subExpenseId)))
-      return new HttpException('GroupMemberExpense not found', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'GroupMemberExpense not found',
+        HttpStatus.NOT_FOUND,
+      );
 
     return this.groupMemberExpensesService.update(
       id,
@@ -129,7 +149,10 @@ export class GroupMemberExpensesController {
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
     if (!(await this.groupMemberExpensesService.exists(id, subExpenseId)))
-      return new HttpException('GroupMemberExpense not found', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'GroupMemberExpense not found',
+        HttpStatus.NOT_FOUND,
+      );
 
     return this.groupMemberExpensesService.remove(id, subExpenseId);
   }

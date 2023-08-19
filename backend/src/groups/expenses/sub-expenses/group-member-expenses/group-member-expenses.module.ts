@@ -15,6 +15,6 @@ import { GroupMembersModule } from 'src/groups/group-members/group-members.modul
     forwardRef(() => SubExpensesModule),
     forwardRef(() => GroupMembersModule),
   ],
-  exports: [GroupMemberExpensesService]
+  exports: [GroupMemberExpensesService],
 })
 export class GroupMemberExpensesModule {}

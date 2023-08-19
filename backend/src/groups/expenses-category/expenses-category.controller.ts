@@ -47,7 +47,6 @@ export class ExpensesCategoryController {
 
   @Get(':id')
   async findOne(@Param('id') id: string, @Param('groupid') groupId: string) {
-    console.log(groupId);
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }

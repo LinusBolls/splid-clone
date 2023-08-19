@@ -28,7 +28,7 @@ export class SubExpensesController {
   async create(
     @Param('groupid') groupId: string,
     @Param('expenseid') expenseId: string,
-    @Body() createSubExpenseDto: CreateSubExpenseDto,
+    @Body() createSubExpenseDto: CreateSubExpenseDto | CreateSubExpenseDto[],
   ) {
     const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(
       groupId,
@@ -36,7 +36,11 @@ export class SubExpensesController {
     );
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
-    return this.subExpensesService.create(createSubExpenseDto, expenseId);
+    let subExpenses: CreateSubExpenseDto[] = [];
+    if (Array.isArray(createSubExpenseDto)) subExpenses = createSubExpenseDto;
+    else subExpenses.push(createSubExpenseDto);
+
+    return this.subExpensesService.create(subExpenses, expenseId);
   }
 
   @Get()
