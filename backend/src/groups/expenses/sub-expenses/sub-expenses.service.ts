@@ -11,16 +11,16 @@ export class SubExpensesService {
       data: {
         ...createSubExpenseDto,
         //TODO: change 23 to an acutal number
-        expenseId
-      }
+        expenseId,
+      },
     });
   }
 
   findAll(expenseId: string) {
     return prisma.subExpense.findMany({
       where: {
-        expenseId
-      }
+        expenseId,
+      },
     });
   }
 
@@ -28,20 +28,36 @@ export class SubExpensesService {
     return prisma.subExpense.findFirst({
       where: {
         expenseId,
-        id
-      }
+        id,
+      },
     });
   }
 
-  update(id: string, updateSubExpenseDto: UpdateSubExpenseDto, expenseId: string) {
+  async exists(id: string, expenseId: string) {
+    return (
+      (await prisma.subExpense.findFirst({
+        where: {
+          id,
+          expenseId,
+        },
+      })) !== null
+    );
+  }
+
+
+  update(
+    id: string,
+    updateSubExpenseDto: UpdateSubExpenseDto,
+    expenseId: string,
+  ) {
     return prisma.subExpense.update({
       where: {
         expenseId,
-        id
+        id,
       },
       data: {
         ...updateSubExpenseDto,
-      }
+      },
     });
   }
 
@@ -50,8 +66,8 @@ export class SubExpensesService {
     return prisma.subExpense.delete({
       where: {
         expenseId,
-        id
-      }
+        id,
+      },
     });
   }
 }

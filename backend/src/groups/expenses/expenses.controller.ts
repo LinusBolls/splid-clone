@@ -93,6 +93,7 @@ export class ExpensesController {
     if (!(await this.expensesService.exists(id, groupId))) {
       throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
     }
+
     return this.expensesService.remove(id);
   }
 }
