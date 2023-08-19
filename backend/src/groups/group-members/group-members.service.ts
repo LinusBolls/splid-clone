@@ -70,11 +70,25 @@ export class GroupMembersService {
   }
 
   async remove(id: string) {
+    //TODO prisma transaction
     await this.paymentDetailsService.removeByMemberId(id);
 
     return prisma.groupMember.delete({
       where: {
         id,
+      },
+    });
+  }
+
+  async removeAllByGroupId(groupId: string) {
+    //TODO prisma transaction
+    for (const member of (await this.findAll(groupId))) {
+      await this.paymentDetailsService.removeByMemberId(member.id);
+    }
+
+    return prisma.groupMember.deleteMany({
+      where: {
+        groupId
       },
     });
   }

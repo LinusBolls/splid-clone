@@ -1,4 +1,4 @@
-import { ExpensesCategoryDto } from 'src/groups/expenses-category/dto/expenses-category.dto';
+import { ExpenseCategoryDto } from 'src/groups/expense-categories/dto/expense-category.dto';
 import { ExpensesAssetDto } from '../expenses-asset/dto/expenses-asset.dto';
 import { SubExpenseDto } from '../sub-expenses/dto/sub-expense.dto';
 
@@ -11,7 +11,7 @@ export class ExpenseDto {
   location: string;
 
   assets: ExpensesAssetDto[];
-  categories: ExpensesCategoryDto[];
+  categories: ExpenseCategoryDto[];
   subExpenses: SubExpenseDto[];
 
   groupId: string;

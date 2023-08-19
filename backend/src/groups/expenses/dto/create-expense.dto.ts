@@ -1,5 +1,4 @@
-import { Allow } from 'class-validator';
-import { MapCategoryToExpenseDto } from 'src/groups/expenses-category/dto/create-expenses-category.dto';
+import {Allow, IsOptional} from 'class-validator';
 
 export class CreateExpenseDto {
   @Allow()
@@ -9,6 +8,6 @@ export class CreateExpenseDto {
   @Allow()
   location: string;
 
-  @Allow()
-  categories: MapCategoryToExpenseDto[];
+  @IsOptional()
+  categoryIds: string[];
 }

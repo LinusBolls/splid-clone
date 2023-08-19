@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { PrismaClient } from '@prisma/client';
-import { ExpensesCategoryService } from '../expenses-category/expenses-category.service';
+import { ExpenseCategoriesService } from '../expense-categories/expense-categories.service';
 const prisma = new PrismaClient();
 
 @Injectable()
 export class ExpensesService {
-  constructor(private categoryService: ExpensesCategoryService) {}
+  constructor(private categoryService: ExpenseCategoriesService) {}
 
   async create(createExpenseDto: CreateExpenseDto, groupId: string) {
     const expense = await prisma.expense.create({
@@ -19,8 +19,8 @@ export class ExpensesService {
       },
     });
 
-    for (const category of createExpenseDto.categories) {
-      await this.categoryService.addCategoryToExpense(expense.id, category.id);
+    for (const categoryId of createExpenseDto.categoryIds) {
+      await this.categoryService.addCategoryToExpense(expense.id, categoryId);
     }
 
     return expense;
@@ -67,14 +67,10 @@ export class ExpensesService {
     });
   }
 
-  async removeAllExpensesAndMappedCategoriesByGroupId(groupId: string) {
-    const expenses = await prisma.expense.findMany({
-      where: {
-        groupId,
-      },
-    });
+  async removeAllByGroupId(groupId: string) {
+    //TODO prisma transaction
 
-    for (const expense of expenses) {
+    for (const expense of (await this.findAll(groupId))) {
       await this.categoryService.deleteCategoryMappingByExpenseId(expense.id);
     }
 
@@ -86,6 +82,7 @@ export class ExpensesService {
   }
 
   async remove(id: string) {
+    //TODO prisma transaction
     await this.categoryService.deleteCategoryMappingByExpenseId(id);
 
     return prisma.expense.delete({

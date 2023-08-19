@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { CreateExpensesCategoryDto } from './dto/create-expenses-category.dto';
-import { UpdateExpensesCategoryDto } from './dto/update-expenses-category.dto';
-import { PrismaClient } from '@prisma/client';
-import { throws } from 'assert';
+import {Injectable} from '@nestjs/common';
+import {CreateExpenseCategoryDto} from './dto/create-expense-category.dto';
+import {UpdateExpenseCategoryDto} from './dto/update-expense-category.dto';
+import {PrismaClient} from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 @Injectable()
-export class ExpensesCategoryService {
+export class ExpenseCategoriesService {
   create(
-    createExpensesCategoryDto: CreateExpensesCategoryDto,
+    createExpensesCategoryDto: CreateExpenseCategoryDto,
     groupId: string,
   ) {
     return prisma.expenseCategory.create({
@@ -16,6 +16,18 @@ export class ExpensesCategoryService {
         ...createExpensesCategoryDto,
         groupId,
       },
+    });
+  }
+
+  createBulk(
+    createExpensesCategoryDtos: CreateExpenseCategoryDto[],
+    groupId: string,
+  ) {
+    return prisma.expenseCategory.createMany({
+      data: createExpensesCategoryDtos.map(createDto => ({
+        ...createDto,
+        groupId
+      }))
     });
   }
 
@@ -32,25 +44,6 @@ export class ExpensesCategoryService {
     await prisma.mappingExpenseCategory.deleteMany({
       where: {
         expenseId,
-      },
-    });
-  }
-
-  async initalizeDefaultCategories(groupId: string) {
-    await prisma.expenseCategory.createMany({
-      data: [
-        {
-          name: 'Transportation',
-          groupId,
-        },
-      ],
-    });
-  }
-
-  async deleteCategoriesByGroupId(groupId: string) {
-    await prisma.expenseCategory.deleteMany({
-      where: {
-        groupId,
       },
     });
   }
@@ -84,7 +77,7 @@ export class ExpensesCategoryService {
   }
   update(
     id: string,
-    updateExpensesCategoryDto: UpdateExpensesCategoryDto,
+    updateExpensesCategoryDto: UpdateExpenseCategoryDto,
     groupId: string,
   ) {
     return prisma.expenseCategory.update({
@@ -98,8 +91,21 @@ export class ExpensesCategoryService {
     });
   }
 
+  async removeAllByGroupId(groupId: string) {
+    await prisma.expenseCategory.deleteMany({
+      where: {
+        groupId,
+      },
+    });
+  }
+
   async remove(id: string, groupId: string) {
-    const findResult = await prisma.mappingExpenseCategory.findMany();
+    const findResult = await prisma.mappingExpenseCategory.findMany({
+      where: {
+        expenseId: id,
+      }
+    });
+
     if (findResult.length > 0) {
       throw new Error('Category is associated to Expenses');
     }

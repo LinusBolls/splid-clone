@@ -4,7 +4,7 @@ import { GroupsController } from './groups.controller';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GroupMembersModule } from './group-members/group-members.module';
 import { CurrenciesModule } from '../currencies/currencies.module';
-import { ExpensesCategoryModule } from './expenses-category/expenses-category.module';
+import { ExpenseCategoriesModule } from './expense-categories/expense-categories.module';
 
 @Module({
   controllers: [GroupsController],
@@ -12,7 +12,7 @@ import { ExpensesCategoryModule } from './expenses-category/expenses-category.mo
   imports: [
     CurrenciesModule,
     ExpensesModule,
-    ExpensesCategoryModule,
+    ExpenseCategoriesModule,
     GroupMembersModule,
   ],
   exports: [GroupsService],
