@@ -1,4 +1,5 @@
 services:
+  
   postgres:
     container_name: postgres_container
     image: postgres:15.4
@@ -13,9 +14,21 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+
+  storage:
+    container_name: seaweed_container
+    image: chrislusf/seaweedfs
+    command: server -s3
+    ports:
+      - "8333:8333"
+    volumes:
+      - seaweed:/data
+
+
 networks:
   postgres:
     driver: bridge
 
 volumes:
   postgres:
+  seaweed:
