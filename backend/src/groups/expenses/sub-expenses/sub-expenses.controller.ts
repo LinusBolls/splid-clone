@@ -29,9 +29,11 @@ export class SubExpensesController {
     @Param('expenseid') expenseId: string,
     @Body() createSubExpenseDto: CreateSubExpenseDto,
   ) {
-    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(groupId, expenseId);
-    if (groupAndExpenseErr !== null) 
-      throw groupAndExpenseErr;
+    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(
+      groupId,
+      expenseId,
+    );
+    if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
     return this.subExpensesService.create(createSubExpenseDto, expenseId);
   }
@@ -41,9 +43,11 @@ export class SubExpensesController {
     @Param('groupid') groupId: string,
     @Param('expenseid') expenseId: string,
   ) {
-    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(groupId, expenseId);
-    if (groupAndExpenseErr !== null) 
-      throw groupAndExpenseErr;
+    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(
+      groupId,
+      expenseId,
+    );
+    if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
     return this.subExpensesService.findAll(expenseId);
   }
@@ -54,15 +58,16 @@ export class SubExpensesController {
     @Param('id') id: string,
     @Param('expenseid') expenseId: string,
   ) {
-    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(groupId, expenseId);
-    if (groupAndExpenseErr !== null) 
-      throw groupAndExpenseErr;
+    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(
+      groupId,
+      expenseId,
+    );
+    if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
     const findResult = await this.subExpensesService.findOne(id, expenseId);
 
-    if (findResult === null) 
-      throw new HttpException("SubExpense not found", HttpStatus.NOT_FOUND);
-
+    if (findResult === null)
+      throw new HttpException('SubExpense not found', HttpStatus.NOT_FOUND);
 
     return findResult;
   }
@@ -74,11 +79,13 @@ export class SubExpensesController {
     @Param('expenseid') expenseId: string,
     @Body() updateSubExpenseDto: UpdateSubExpenseDto,
   ) {
-    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(groupId, expenseId);
-    if (groupAndExpenseErr !== null) 
-      throw groupAndExpenseErr;
+    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(
+      groupId,
+      expenseId,
+    );
+    if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
-    if (!(await this.subExpensesService.exists(id, expenseId))) 
+    if (!(await this.subExpensesService.exists(id, expenseId)))
       throw new HttpException('SubExpense not found', HttpStatus.NOT_FOUND);
 
     return this.subExpensesService.update(id, updateSubExpenseDto, expenseId);
@@ -90,17 +97,22 @@ export class SubExpensesController {
     @Param('id') id: string,
     @Param('expenseid') expenseId: string,
   ) {
-    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(groupId, expenseId);
-    if (groupAndExpenseErr !== null) 
-      throw groupAndExpenseErr;
+    const groupAndExpenseErr = await this.checkIfGroupAndExpenseExist(
+      groupId,
+      expenseId,
+    );
+    if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
-    if (!(await this.subExpensesService.exists(id, expenseId))) 
+    if (!(await this.subExpensesService.exists(id, expenseId)))
       throw new HttpException('SubExpense not found', HttpStatus.NOT_FOUND);
 
     return this.subExpensesService.remove(id, expenseId);
   }
 
-  async checkIfGroupAndExpenseExist(groupId: string, expenseId: string): Promise<HttpException | null> {
+  async checkIfGroupAndExpenseExist(
+    groupId: string,
+    expenseId: string,
+  ): Promise<HttpException | null> {
     if (!(await this.groupsService.exists(groupId))) {
       return new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
@@ -109,6 +121,6 @@ export class SubExpensesController {
       return new HttpException('Expense not found', HttpStatus.NOT_FOUND);
     }
 
-    return null
+    return null;
   }
 }

@@ -44,7 +44,6 @@ export class SubExpensesService {
     );
   }
 
-
   update(
     id: string,
     updateSubExpenseDto: UpdateSubExpenseDto,

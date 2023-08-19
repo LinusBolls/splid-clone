@@ -6,7 +6,7 @@ export class CreateGroupMemberExpenseDto {
   groupMemberId: string;
 
   @IsNotEmpty()
-  role: typeof ROLE;
+  role: keyof typeof GROUP_MEMBER_EXPENSE_ROLE;
 
   @IsNotEmpty()
   amount: Big;
@@ -15,7 +15,7 @@ export class CreateGroupMemberExpenseDto {
   currency: string;
 }
 
-const ROLE = {
+export const GROUP_MEMBER_EXPENSE_ROLE = {
   SPONSOR: 'SPONSOR',
   GAINER: 'GAINER',
-};
+}as const;
