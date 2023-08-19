@@ -6,7 +6,7 @@ export class CreateGroupMemberExpenseDto {
   groupMemberId: string;
   
   @IsNotEmpty()
-  role: typeof ROLE;
+  role: keyof typeof ROLE;
 
 
   @IsNotEmpty()

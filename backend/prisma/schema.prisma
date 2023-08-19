@@ -16,7 +16,7 @@ model Group {
   updatedAt DateTime @updatedAt
 
   name        String
-  description String
+  description String?
   inviteCode  String @unique
   currency    String
 
@@ -58,14 +58,14 @@ model Expense {
   updatedAt DateTime @updatedAt
 
   name        String
-  description String
-  location    String
+  description String?
+  location    String?
 
   assets                 ExpenseAsset[]
-  subExpense             SubExpense[]
+  subExpenses            SubExpense[]
   group                  Group                    @relation(fields: [groupId], references: [id])
   groupId                String
-  ExpenseExpenseCategory MappingExpenseCategory[]
+  categories             MappingExpenseCategory[]
 }
 
 model ExpenseAsset {

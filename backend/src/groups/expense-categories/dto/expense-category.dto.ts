@@ -1,4 +1,6 @@
+import {Expose} from "class-transformer";
+
 export class ExpenseCategoryDto {
-  id: string
-  name: string
+  @Expose() id: string
+  @Expose() name: string
 }

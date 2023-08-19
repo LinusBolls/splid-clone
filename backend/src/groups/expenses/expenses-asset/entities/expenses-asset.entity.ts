@@ -1,1 +1,1 @@
-export class ExpensesAsset {}
+export class ExpensesAssetEntity {}

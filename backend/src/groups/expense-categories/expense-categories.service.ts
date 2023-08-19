@@ -31,28 +31,11 @@ export class ExpenseCategoriesService {
     });
   }
 
-  async addCategoryToExpense(expenseId: string, categoryId: string) {
-    await prisma.mappingExpenseCategory.create({
-      data: {
-        expenseId,
-        expenseCategoryId: categoryId,
-      },
-    });
-  }
-
-  async deleteCategoryMappingByExpenseId(expenseId: string) {
-    await prisma.mappingExpenseCategory.deleteMany({
-      where: {
-        expenseId,
-      },
-    });
-  }
-
   findAll(groupId: string) {
     return prisma.expenseCategory.findMany({
       where: {
         groupId,
-      },
+      }
     });
   }
 

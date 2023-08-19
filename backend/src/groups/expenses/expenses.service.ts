@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { CreateExpenseDto } from './dto/create-expense.dto';
-import { UpdateExpenseDto } from './dto/update-expense.dto';
-import { PrismaClient } from '@prisma/client';
-import { ExpenseCategoriesService } from '../expense-categories/expense-categories.service';
+import {Injectable} from '@nestjs/common';
+import {CreateExpenseDto} from './dto/create-expense.dto';
+import {UpdateExpenseDto} from './dto/update-expense.dto';
+import {PrismaClient} from '@prisma/client';
+import {ExpenseMapper} from "./mapping/expense.mapper";
+
 const prisma = new PrismaClient();
 
 @Injectable()
 export class ExpensesService {
-  constructor(private categoryService: ExpenseCategoriesService) {}
+  constructor(private readonly expenseMapper: ExpenseMapper) {}
 
   async create(createExpenseDto: CreateExpenseDto, groupId: string) {
     const expense = await prisma.expense.create({
@@ -15,32 +16,50 @@ export class ExpensesService {
         name: createExpenseDto.name,
         description: createExpenseDto.description,
         location: createExpenseDto.location,
-        groupId,
-      },
+        groupId
+      }
     });
 
     for (const categoryId of createExpenseDto.categoryIds) {
-      await this.categoryService.addCategoryToExpense(expense.id, categoryId);
+      await this.addCategory(expense.id, categoryId);
     }
 
-    return expense;
+    return this.expenseMapper.entityFromDb(expense);
   }
 
-  findAll(groupId: string) {
-    return prisma.expense.findMany({
+  async findAll(groupId: string) {
+    const dbResult = await prisma.expense.findMany({
       where: {
-        groupId,
+        groupId
       },
+      include: {
+        categories: {
+          include: {
+            expenseCategory: true
+          }
+        }
+      }
     });
+
+    return this.expenseMapper.categoryEnhancedEntitiesFromDb(dbResult);
   }
 
-  findOne(id: string, groupId: string) {
-    return prisma.expense.findFirst({
+  async findOne(id: string, groupId: string) {
+    const dbResult = await prisma.expense.findFirst({
       where: {
         id,
-        groupId,
+        groupId
       },
+      include: {
+        categories: {
+          include: {
+            expenseCategory: true
+          }
+        }
+      }
     });
+
+    return this.expenseMapper.categoryEnhancedEntityFromDb(dbResult);
   }
 
   async exists(id: string, groupId: string) {
@@ -48,47 +67,111 @@ export class ExpensesService {
       (await prisma.expense.findFirst({
         where: {
           id,
-          groupId,
+          groupId
         },
       })) !== null
     );
   }
 
   async update(id: string, updateExpenseDto: UpdateExpenseDto) {
-    return prisma.expense.update({
+    //TODO prisma transaction
+
+    await this.deleteCategoryMapping(id)
+    await this.addCategories(id, updateExpenseDto.categoryIds)
+
+    const dbResult = await prisma.expense.update({
       where: {
-        id,
+        id
       },
       data: {
         name: updateExpenseDto.name,
         description: updateExpenseDto.description,
-        location: updateExpenseDto.location,
+        location: updateExpenseDto.location
       },
+      include: {
+        categories: {
+          include: {
+            expenseCategory: true
+          }
+        }
+      }
     });
+
+    return this.expenseMapper.categoryEnhancedEntityFromDb(dbResult);
   }
 
   async removeAllByGroupId(groupId: string) {
     //TODO prisma transaction
 
     for (const expense of (await this.findAll(groupId))) {
-      await this.categoryService.deleteCategoryMappingByExpenseId(expense.id);
+      await this.deleteCategoryMapping(expense.id);
     }
 
     await prisma.expense.deleteMany({
       where: {
-        groupId,
+        groupId
       },
     });
   }
 
   async remove(id: string) {
     //TODO prisma transaction
-    await this.categoryService.deleteCategoryMappingByExpenseId(id);
+    await this.deleteCategoryMapping(id);
 
-    return prisma.expense.delete({
+    await prisma.expense.delete({
       where: {
-        id,
+        id
       },
     });
   }
+
+  private addCategory(expenseId: string, categoryId: string) {
+    return prisma.mappingExpenseCategory.create({
+      data: {
+        expenseId,
+        expenseCategoryId: categoryId
+      },
+    });
+  }
+
+  private addCategories(expenseId: string, categoryIds: string[]) {
+    return prisma.mappingExpenseCategory.createMany({
+      data: categoryIds.map(categoryId => ({
+        expenseCategoryId: categoryId,
+        expenseId
+      }))
+    });
+  }
+
+  private deleteCategoryMapping(expenseId: string) {
+    return prisma.mappingExpenseCategory.deleteMany({
+      where: {
+        expenseId
+      },
+    });
+  }
+
+  /*private async includeCategories(
+      entity: Expense,
+  ): Promise<ExpenseEntity> {
+    return {
+      ...entity,
+      categories: this.paymentDetailMapper.entitiesFromDb(
+          await this.paymentDetailsService.findAll(entity.id),
+      ),
+    };
+  }
+
+  private async includeCategoriesBulk(
+      entity: Expense[],
+  ): Promise<ExpenseEntity[]> {
+    const list: GroupMemberEntity[] = [];
+
+    for (const member of members) {
+      const completedMember = await this.includePaymentDetail(member);
+      list.push(completedMember);
+    }
+
+    return list;
+  }*/
 }

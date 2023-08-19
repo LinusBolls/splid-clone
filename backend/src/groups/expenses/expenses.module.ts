@@ -5,10 +5,11 @@ import { SubExpensesModule } from './sub-expenses/sub-expenses.module';
 import { ExpensesAssetModule } from './expenses-asset/expenses-asset.module';
 import { ExpenseCategoriesModule } from '../expense-categories/expense-categories.module';
 import { GroupsModule } from '../groups.module';
+import {ExpenseMapper} from "./mapping/expense.mapper";
 
 @Module({
   controllers: [ExpensesController],
-  providers: [ExpensesService],
+  providers: [ExpensesService, ExpenseMapper],
   imports: [
     SubExpensesModule,
     ExpensesAssetModule,

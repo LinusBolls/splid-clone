@@ -1,13 +1,13 @@
-import {Allow, IsOptional} from 'class-validator';
+import {ArrayNotEmpty, IsNotEmpty, IsOptional} from 'class-validator';
 
 export class CreateExpenseDto {
-  @Allow()
+  @IsNotEmpty()
   name: string;
-  @Allow()
+  @IsOptional()
   description: string;
-  @Allow()
+  @IsOptional()
   location: string;
 
-  @IsOptional()
+  @ArrayNotEmpty()
   categoryIds: string[];
 }
