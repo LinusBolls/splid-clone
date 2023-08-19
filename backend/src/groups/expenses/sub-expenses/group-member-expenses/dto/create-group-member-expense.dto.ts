@@ -18,4 +18,4 @@ export class CreateGroupMemberExpenseDto {
 export const GROUP_MEMBER_EXPENSE_ROLE = {
   SPONSOR: 'SPONSOR',
   GAINER: 'GAINER',
-}as const;
+} as const;

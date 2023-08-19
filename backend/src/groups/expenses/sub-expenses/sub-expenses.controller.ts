@@ -14,6 +14,7 @@ import { CreateSubExpenseDto } from './dto/create-sub-expense.dto';
 import { UpdateSubExpenseDto } from './dto/update-sub-expense.dto';
 import { GroupsService } from 'src/groups/groups.service';
 import { ExpensesService } from '../expenses.service';
+import { group } from 'console';
 
 @Controller('/groups/:groupid/expenses/:expenseid/sub-expenses')
 export class SubExpensesController {
@@ -117,7 +118,7 @@ export class SubExpensesController {
       return new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
 
-    if (!(await this.expensesService.exists(groupId, expenseId))) {
+    if (!(await this.expensesService.exists(expenseId, groupId))) {
       return new HttpException('Expense not found', HttpStatus.NOT_FOUND);
     }
 

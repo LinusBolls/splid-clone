@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateSubExpenseDto } from './dto/create-sub-expense.dto';
 import { UpdateSubExpenseDto } from './dto/update-sub-expense.dto';
 import { PrismaClient } from '@prisma/client';
+import { GroupMemberExpensesService } from './group-member-expenses/group-member-expenses.service';
 const prisma = new PrismaClient();
 
 @Injectable()
 export class SubExpensesService {
+  constructor(
+    private readonly groupMemberExpensesService: GroupMemberExpensesService
+  ) {}
   async create(createSubExpenseDto: CreateSubExpenseDto, expenseId: string) {
     return prisma.subExpense.create({
       data: {
@@ -62,11 +66,16 @@ export class SubExpensesService {
 
   remove(id: string, expenseId: string) {
     //TODO: delete all Groupmemberexpenses and assets
+
     return prisma.subExpense.delete({
       where: {
         expenseId,
         id,
       },
     });
+  }
+
+  removeSubExpensesBelongingToExpense(expenseId: string) {
+    return 
   }
 }

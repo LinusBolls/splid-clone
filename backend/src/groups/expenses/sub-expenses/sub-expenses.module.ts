@@ -13,5 +13,6 @@ import { ExpensesModule } from '../expenses.module';
     forwardRef(() => ExpensesModule),
     GroupMemberExpensesModule,
   ],
+  exports: [SubExpensesService],
 })
 export class SubExpensesModule {}
