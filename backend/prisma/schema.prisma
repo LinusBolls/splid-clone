@@ -30,12 +30,12 @@ model GroupMember {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
+  name   String
   status String?
 
-  group    Group                @relation(fields: [groupId], references: [id])
-  groupId  String
-  expenses GroupMemberExpense[]
+  group          Group                      @relation(fields: [groupId], references: [id])
+  groupId        String
+  expenses       GroupMemberExpense[]
   paymentDetails GroupMemberPaymentDetail[]
 }
 
@@ -44,12 +44,12 @@ model GroupMemberPaymentDetail {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  type String
-  name String?
+  type   String
+  name   String?
   detail String
 
-  groupMember    GroupMember                @relation(fields: [groupMemberId], references: [id])
-  groupMemberId  String
+  groupMember   GroupMember @relation(fields: [groupMemberId], references: [id])
+  groupMemberId String
 }
 
 model Expense {
@@ -76,8 +76,10 @@ model ExpenseAsset {
   // TODO Linus, upload id or something
   uploadId String
 
-  expense   Expense @relation(fields: [expenseId], references: [id])
-  expenseId String
+  expense      Expense     @relation(fields: [expenseId], references: [id])
+  expenseId    String
+  SubExpense   SubExpense? @relation(fields: [subExpenseId], references: [id])
+  subExpenseId String?
 }
 
 model ExpenseCategory {
@@ -85,9 +87,9 @@ model ExpenseCategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name                   String
-  group                  Group                    @relation(fields: [groupId], references: [id])
-  groupId                String
+  name                     String
+  group                    Group                    @relation(fields: [groupId], references: [id])
+  groupId                  String
   mappingExpenseCategories MappingExpenseCategory[]
 }
 
@@ -108,13 +110,12 @@ model SubExpense {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  priceReferenceCurrency Decimal
-  price                  Decimal
-  currency               String
+  name                   String
 
-  expense     Expense              @relation(fields: [expenseId], references: [id])
-  groupMemberExpense GroupMemberExpense[]
-  expenseId   String
+  expenseAssets       ExpenseAsset[]
+  expense             Expense              @relation(fields: [expenseId], references: [id])
+  groupMemberExpenses GroupMemberExpense[]
+  expenseId           String
 }
 
 model GroupMemberExpense {
@@ -122,6 +123,8 @@ model GroupMemberExpense {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  amountReferenceCurrency Decimal
+  currency               String
   amount Decimal
   role   GROUP_MEMBER_EXPENSE_ROLE
 
@@ -141,7 +144,7 @@ model Currency {
 
   symbol       String
   name         String
-  date           DateTime @db.Date
+  date         DateTime       @db.Date
   CurrencyRate CurrencyRate[]
 
   @@id([symbol, date])
@@ -150,10 +153,10 @@ model Currency {
 model CurrencyRate {
   createdAt DateTime @default(now())
 
-  currency       Currency @relation(fields: [symbol, date], references: [symbol, date])
-  symbol String
-  date           DateTime @db.Date
-  rateEurBase   Decimal
+  currency    Currency @relation(fields: [symbol, date], references: [symbol, date])
+  symbol      String
+  date        DateTime @db.Date
+  rateEurBase Decimal
 
   @@id([symbol, date])
 }

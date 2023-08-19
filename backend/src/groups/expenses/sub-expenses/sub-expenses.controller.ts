@@ -16,30 +16,36 @@ export class SubExpensesController {
   constructor(private readonly subExpensesService: SubExpensesService) {}
 
   @Post()
-  create(@Body() createSubExpenseDto: CreateSubExpenseDto) {
-    return this.subExpensesService.create(createSubExpenseDto);
+  create(@Param("groupid") groupId: string, @Param("expenseid") expenseId: string, @Body() createSubExpenseDto: CreateSubExpenseDto) {
+    return this.subExpensesService.create(createSubExpenseDto, expenseId);
   }
 
   @Get()
-  findAll() {
-    return this.subExpensesService.findAll();
+  findAll(@Param("groupid") groupId: string, @Param("expenseid") expenseId: string) {
+    return this.subExpensesService.findAll(expenseId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subExpensesService.findOne(+id);
+  findOne(@Param("groupid") groupId: string, @Param('id') id: string, @Param("expenseid") expenseId: string) {
+    return this.subExpensesService.findOne(id, expenseId);
   }
 
   @Patch(':id')
   update(
     @Param('id') id: string,
+    @Param("groupid") groupId: string, 
+    @Param("expenseid") expenseId: string,
     @Body() updateSubExpenseDto: UpdateSubExpenseDto,
   ) {
-    return this.subExpensesService.update(+id, updateSubExpenseDto);
+    return this.subExpensesService.update(id, updateSubExpenseDto, expenseId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subExpensesService.remove(+id);
+  remove(
+    @Param("groupid") groupId: string,
+    @Param('id') id: string,
+    @Param("expenseid") expenseId: string
+  ) {
+    return this.subExpensesService.remove(id, expenseId);
   }
 }
