@@ -23,7 +23,6 @@ model Group {
   expenses          Expense[]
   expenseCategories ExpenseCategory[]
   groupMembers      GroupMember[]
-  payments          Payment[]
 }
 
 model GroupMember {
@@ -177,7 +176,4 @@ model Payment {
   senderId   String
   receiver   GroupMember @relation("received", fields: [receiverId], references: [id])
   receiverId String
-
-  group   Group  @relation(fields: [groupId], references: [id])
-  groupId String
 }
