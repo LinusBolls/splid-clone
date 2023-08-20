@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+  inviteCode  String  @unique
+  currency    String
+
+  expenses          Expense[]
+  expenseCategories ExpenseCategory[]
+  groupMembers      GroupMember[]
+
+  payments Payment[]
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name   String
+  status String?
+
+  group          Group                      @relation(fields: [groupId], references: [id])
+  groupId        String
+  expenses       GroupMemberExpense[]
+  paymentDetails GroupMemberPaymentDetail[]
+  sent           Payment[]                  @relation("sent")
+  received       Payment[]                  @relation("received")
+}
+
+model GroupMemberPaymentDetail {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type   String
+  name   String?
+  detail String
+
+  groupMember   GroupMember @relation(fields: [groupMemberId], references: [id])
+  groupMemberId String
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+  location    String?
+
+  assets      ExpenseAsset[]
+  subExpenses SubExpense[]
+  group       Group                    @relation(fields: [groupId], references: [id])
+  groupId     String
+  categories  MappingExpenseCategory[]
+}
+
+model ExpenseAsset {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // TODO Linus, upload id or something
+  uploadId String
+
+  expense      Expense     @relation(fields: [expenseId], references: [id])
+  expenseId    String
+  SubExpense   SubExpense? @relation(fields: [subExpenseId], references: [id])
+  subExpenseId String?
+}
+
+model ExpenseCategory {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name                     String
+  group                    Group                    @relation(fields: [groupId], references: [id])
+  groupId                  String
+  mappingExpenseCategories MappingExpenseCategory[]
+}
+
+model MappingExpenseCategory {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expense           Expense         @relation(fields: [expenseId], references: [id])
+  expenseId         String
+  expenseCategory   ExpenseCategory @relation(fields: [expenseCategoryId], references: [id])
+  expenseCategoryId String
+
+  @@id([expenseId, expenseCategoryId])
+}
+
+model SubExpense {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  expenseAssets       ExpenseAsset[]
+  expense             Expense              @relation(fields: [expenseId], references: [id])
+  groupMemberExpenses GroupMemberExpense[]
+  expenseId           String
+}
+
+model GroupMemberExpense {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amountReferenceCurrency Decimal
+  currency                String
+  amount                  Decimal
+  role                    GROUP_MEMBER_EXPENSE_ROLE
+  date DateTime
+
+  subExpense    SubExpense  @relation(fields: [subExpenseId], references: [id])
+  groupMember   GroupMember @relation(fields: [groupMemberId], references: [id])
+  subExpenseId  String
+  groupMemberId String
+}
+
+enum GROUP_MEMBER_EXPENSE_ROLE {
+  SPONSOR
+  GAINER
+}
+
+model Currency {
+  createdAt DateTime @default(now())
+
+  symbol       String
+  name         String
+  date         DateTime       @db.Date
+  CurrencyRate CurrencyRate[]
+
+  @@id([symbol, date])
+}
+
+model CurrencyRate {
+  createdAt DateTime @default(now())
+
+  currency    Currency @relation(fields: [symbol, date], references: [symbol, date])
+  symbol      String
+  date        DateTime @db.Date
+  rateEurBase Decimal
+
+  @@id([symbol, date])
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amountReferenceCurrency Decimal
+  currency                String
+  amount                  Decimal
+
+  sender     GroupMember @relation("sent", fields: [senderId], references: [id])
+  senderId   String
+  receiver   GroupMember @relation("received", fields: [receiverId], references: [id])
+  receiverId String
+
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
+}
