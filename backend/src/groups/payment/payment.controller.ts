@@ -16,9 +16,9 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { GroupsService } from '../groups.service';
 import { GroupMembersService } from '../group-members/group-members.service';
-import {PaymentMapper} from "./mapping/payment.mapper";
+import { PaymentMapper } from './mapping/payment.mapper';
 
-@Controller('/groups/:groupId/payment')
+@Controller('/groups/:groupId/payments')
 export class PaymentController {
   constructor(
     private readonly paymentService: PaymentService,
@@ -111,14 +111,18 @@ export class PaymentController {
 
     if (
       updatePaymentDto.senderId === updatePaymentDto.receiverId &&
-        updatePaymentDto.senderId != null
+      updatePaymentDto.senderId != null
     )
       throw new HttpException(
         'Sender and Reiceiver cannot be the same',
         HttpStatus.BAD_REQUEST,
       );
 
-    const result = await this.paymentService.update(id, updatePaymentDto, groupId);
+    const result = await this.paymentService.update(
+      id,
+      updatePaymentDto,
+      groupId,
+    );
 
     return this.paymentMapper.dtoFromEntity(result);
   }

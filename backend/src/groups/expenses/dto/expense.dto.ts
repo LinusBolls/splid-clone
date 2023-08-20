@@ -1,7 +1,7 @@
-import {ExpenseCategoryDto} from 'src/groups/expense-categories/dto/expense-category.dto';
-import {SubExpenseDto} from '../sub-expenses/dto/sub-expense.dto';
-import {Expose} from 'class-transformer';
-import Big from "big.js";
+import { ExpenseCategoryDto } from 'src/groups/expense-categories/dto/expense-category.dto';
+import { SubExpenseDto } from '../sub-expenses/dto/sub-expense.dto';
+import { Expose } from 'class-transformer';
+import Big from 'big.js';
 
 export class ExpenseDto {
   @Expose() id: string;

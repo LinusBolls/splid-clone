@@ -105,6 +105,7 @@ CREATE TABLE "GroupMemberExpense" (
     "currency" TEXT NOT NULL,
     "amount" DECIMAL(65,30) NOT NULL,
     "role" "GROUP_MEMBER_EXPENSE_ROLE" NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
     "subExpenseId" TEXT NOT NULL,
     "groupMemberId" TEXT NOT NULL,
 
@@ -141,6 +142,7 @@ CREATE TABLE "Payment" (
     "amount" DECIMAL(65,30) NOT NULL,
     "senderId" TEXT NOT NULL,
     "receiverId" TEXT NOT NULL,
+    "groupId" TEXT NOT NULL,
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
@@ -189,3 +191,6 @@ ALTER TABLE "Payment" ADD CONSTRAINT "Payment_senderId_fkey" FOREIGN KEY ("sende
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "GroupMember"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "Group"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,8 +1,8 @@
-import {Mapper, Mappings} from 'ts-mapstruct';
-import {Injectable} from '@nestjs/common';
-import {Payment, Prisma} from '@prisma/client';
-import {PaymentDto} from "../dto/payment.dto";
-import {PaymentEntity} from "../entities/payment.entity";
+import { Mapper, Mappings } from 'ts-mapstruct';
+import { Injectable } from '@nestjs/common';
+import { Payment, Prisma } from '@prisma/client';
+import { PaymentDto } from '../dto/payment.dto';
+import { PaymentEntity } from '../entities/payment.entity';
 
 @Injectable()
 @Mapper()
@@ -30,9 +30,7 @@ export class PaymentMapper {
     return new PaymentEntity();
   }
 
-  categoryEnhancedEntitiesFromDb(
-    payments: EnhancedPayment[],
-  ): PaymentEntity[] {
+  categoryEnhancedEntitiesFromDb(payments: EnhancedPayment[]): PaymentEntity[] {
     return payments.map((payment) =>
       this.categoryEnhancedEntityFromDb(payment),
     );
@@ -43,10 +41,8 @@ const enhancedPayment = Prisma.validator<Prisma.PaymentDefaultArgs>()({
   include: {
     sender: true,
     receiver: true,
-    group: true
+    group: true,
   },
 });
 
-type EnhancedPayment = Prisma.PaymentGetPayload<
-  typeof enhancedPayment
->;
+type EnhancedPayment = Prisma.PaymentGetPayload<typeof enhancedPayment>;

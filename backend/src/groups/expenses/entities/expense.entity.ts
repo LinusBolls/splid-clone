@@ -1,7 +1,7 @@
-import {SubExpenseEntity} from '../sub-expenses/entities/sub-expense.entity';
-import {ExpensesCategoryEntity} from '../../expense-categories/entities/expense-category.entity';
-import {Expose} from 'class-transformer';
-import Big from "big.js";
+import { SubExpenseEntity } from '../sub-expenses/entities/sub-expense.entity';
+import { ExpensesCategoryEntity } from '../../expense-categories/entities/expense-category.entity';
+import { Expose } from 'class-transformer';
+import Big from 'big.js';
 
 export class ExpenseEntity {
   @Expose() id: string;

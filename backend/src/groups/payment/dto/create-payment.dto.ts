@@ -1,6 +1,6 @@
-import {IsDate, IsNotEmpty} from 'class-validator';
+import { IsDate, IsNotEmpty } from 'class-validator';
 import Big from 'big.js';
-import {Type} from "class-transformer";
+import { Type } from 'class-transformer';
 
 export class CreatePaymentDto {
   @IsNotEmpty()

@@ -1,20 +1,22 @@
-import {forwardRef, Inject, Injectable} from '@nestjs/common';
-import {CreatePaymentDto} from './dto/create-payment.dto';
-import {UpdatePaymentDto} from './dto/update-payment.dto';
-import {PrismaClient} from '@prisma/client';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { PrismaClient } from '@prisma/client';
 import Big from 'big.js';
-import {PaymentMapper} from "./mapping/payment.mapper";
-import {CurrenciesService} from "../../currencies/currencies.service";
-import {GroupsService} from "../groups.service";
+import { PaymentMapper } from './mapping/payment.mapper';
+import { CurrenciesService } from '../../currencies/currencies.service';
+import { GroupsService } from '../groups.service';
 
 const prisma = new PrismaClient();
 
 @Injectable()
 export class PaymentService {
-  constructor(private readonly paymentMapper: PaymentMapper, private readonly currenciesService: CurrenciesService,
-              @Inject(forwardRef(() => GroupsService))
-              private groupsService: GroupsService) {
-  }
+  constructor(
+    private readonly paymentMapper: PaymentMapper,
+    private readonly currenciesService: CurrenciesService,
+    @Inject(forwardRef(() => GroupsService))
+    private groupsService: GroupsService,
+  ) {}
 
   async create(createPaymentDto: CreatePaymentDto, groupId: string) {
     const groupCurrency = (await this.groupsService.findOne(groupId)).currency;
@@ -25,20 +27,20 @@ export class PaymentService {
         amount: createPaymentDto.amount.toString(),
         //TODO: Change the 23
         amountReferenceCurrency: (
-            await this.currenciesService.convert(
-                createPaymentDto.currency,
-                groupCurrency,
-                createPaymentDto.amount,
-                createPaymentDto.date,
-            )
+          await this.currenciesService.convert(
+            createPaymentDto.currency,
+            groupCurrency,
+            createPaymentDto.amount,
+            createPaymentDto.date,
+          )
         ).toString(),
         groupId,
       },
       include: {
         sender: true,
         receiver: true,
-        group: true
-      }
+        group: true,
+      },
     });
 
     return this.paymentMapper.categoryEnhancedEntityFromDb(result);
@@ -53,8 +55,8 @@ export class PaymentService {
       include: {
         sender: true,
         receiver: true,
-        group: true
-      }
+        group: true,
+      },
     });
 
     return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
@@ -69,11 +71,26 @@ export class PaymentService {
       include: {
         sender: true,
         receiver: true,
-        group: true
-      }
+        group: true,
+      },
     });
 
     return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
+  }
+
+  findAllPaymentsByGroupMemberId(groupMemberId: string) {
+    return prisma.payment.findMany({
+      where: {
+        OR: [
+          {
+            senderId: groupMemberId,
+          },
+          {
+            receiverId: groupMemberId,
+          },
+        ],
+      },
+    });
   }
 
   async findAll(groupId: string) {
@@ -84,8 +101,8 @@ export class PaymentService {
       include: {
         sender: true,
         receiver: true,
-        group: true
-      }
+        group: true,
+      },
     });
 
     return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
@@ -100,8 +117,8 @@ export class PaymentService {
       include: {
         sender: true,
         receiver: true,
-        group: true
-      }
+        group: true,
+      },
     });
 
     return this.paymentMapper.categoryEnhancedEntityFromDb(result);
@@ -135,7 +152,11 @@ export class PaymentService {
     );
   }
 
-  async update(id: string, updatePaymentDto: UpdatePaymentDto, groupId: string) {
+  async update(
+    id: string,
+    updatePaymentDto: UpdatePaymentDto,
+    groupId: string,
+  ) {
     const result = await prisma.payment.update({
       where: {
         id,
@@ -150,8 +171,8 @@ export class PaymentService {
       include: {
         sender: true,
         receiver: true,
-        group: true
-      }
+        group: true,
+      },
     });
 
     return this.paymentMapper.categoryEnhancedEntityFromDb(result);

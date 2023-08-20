@@ -66,9 +66,9 @@ export class SubExpensesService {
   }
 
   async update(
-      id: string,
-      updateSubExpenseDto: UpdateSubExpenseDto,
-      expenseId: string,
+    id: string,
+    updateSubExpenseDto: UpdateSubExpenseDto,
+    expenseId: string,
   ) {
     const result = await prisma.subExpense.update({
       where: {
