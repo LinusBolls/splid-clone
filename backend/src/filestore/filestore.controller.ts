@@ -1,4 +1,12 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+import { FilestoreService } from './filestore.service';
 
-@Controller('filestore')
-export class FilestoreController {}
+@Controller('/upload/:bucket')
+export class FilestoreController {
+  constructor(private readonly filestoreService: FilestoreService) {}
+
+  @Get()
+  async getUrl() {
+    return this.filestoreService.getUploadMemberPhotoUrl();
+  }
+}
