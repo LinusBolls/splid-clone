@@ -1,5 +1,5 @@
-import { IsNotEmpty } from "class-validator";
-import Big from "big.js";
+import { IsNotEmpty } from 'class-validator';
+import Big from 'big.js';
 
 export class CreatePaymentDto {
   @IsNotEmpty()
@@ -8,12 +8,9 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   currency: string;
 
-<<<<<<< Updated upstream
-=======
   @IsNotEmpty()
   senderId: string;
 
   @IsNotEmpty()
   receiverId: string;
->>>>>>> Stashed changes
 }

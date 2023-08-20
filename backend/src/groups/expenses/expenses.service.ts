@@ -108,7 +108,9 @@ export class ExpensesService {
     //TODO prisma transaction
 
     for (const expense of await this.findAll(groupId)) {
-      await this.subExpensesService.removeSubExpensesBelongingToExpense(expense.id);
+      await this.subExpensesService.removeSubExpensesBelongingToExpense(
+        expense.id,
+      );
       await this.deleteCategoryMapping(expense.id);
     }
 
@@ -119,7 +121,7 @@ export class ExpensesService {
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, groupId: string) {
     //TODO prisma transaction
     await this.deleteCategoryMapping(id);
 
@@ -128,6 +130,7 @@ export class ExpensesService {
     await prisma.expense.delete({
       where: {
         id,
+        groupId
       },
     });
   }

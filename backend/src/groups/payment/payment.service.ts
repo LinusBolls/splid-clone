@@ -12,53 +12,73 @@ export class PaymentService {
       data: {
         ...createPaymentDto,
         amount: createPaymentDto.amount.toString(),
+        //TODO: Change the 23
         amountReferenceCurrency: new Big(23).toString(),
-        groupId
-      }
+        groupId,
+      },
     });
   }
 
-  findAll(groupId: string, senderId?: string, receiverId?: string) {
+  findAllFromReceiver(groupId: string, receiverId: string,) {
     return prisma.payment.findMany({
       where: {
-        OR: [
-          {
-            groupId
-          },
-          {
-            groupId,
-            senderId
-          },
-          {
-            groupId,
-            receiverId
-          },
-        ]
-      }
+        groupId,
+        receiverId
+      },
+    });
+  }
+
+  findAllFromSender(groupId: string, senderId: string,) {
+    return prisma.payment.findMany({
+      where: {
+        groupId,
+        senderId
+      },
+    });
+  }
+
+  findAll(groupId: string) {
+    return prisma.payment.findMany({
+      where: {
+        groupId,
+      },
     });
   }
 
   findOne(id: string, groupId: string) {
-    return prisma.payment.findMany({
+    return prisma.payment.findFirst({
       where: {
         id,
         groupId,
-      }
+      },
     });
   }
+
+
+  async exists(id: string, groupId: string) {
+    return (
+      (await prisma.payment.findFirst({
+        where: {
+          id,
+          groupId
+        },
+      })) !== null
+    );
+  }
+
 
   update(id: string, updatePaymentDto: UpdatePaymentDto, groupId: string) {
     return prisma.payment.update({
       where: {
         id,
-        groupId
+        groupId,
       },
       data: {
         ...updatePaymentDto,
         amount: updatePaymentDto.amount.toString(),
         //TODO: Change the 23
         amountReferenceCurrency: new Big(23).toString(),
-      }
+      },
     });
   }
 
@@ -66,8 +86,8 @@ export class PaymentService {
     return prisma.payment.delete({
       where: {
         id,
-        groupId
-      }
+        groupId,
+      },
     });
   }
 }
