@@ -6,8 +6,7 @@ import {
 import { PrismaClient } from '@prisma/client';
 import { CurrencyRateMapper } from './mapping/currency-rate.mapper';
 import { CurrencyMapper } from './mapping/currency.mapper';
-import { Decimal } from '@prisma/client/runtime/library';
-import Big from "big.js";
+import Big from 'big.js';
 
 const prisma = new PrismaClient();
 
@@ -31,26 +30,26 @@ export class CurrenciesService {
   async findOneCurrency(symbol: string, date: Date) {
     await this.populateTables(date);
 
-    const result = prisma.currency.findFirst({
+    return prisma.currency.findFirst({
       where: {
         symbol,
         date,
       },
     });
-
-    return result;
   }
 
   async findAllRates(date: Date) {
     await this.populateTables(date);
 
-    return (await prisma.currencyRate.findMany({
-      where: {
-        date,
-      },
-    })).map(value => ({
+    return (
+      await prisma.currencyRate.findMany({
+        where: {
+          date,
+        },
+      })
+    ).map((value) => ({
       ...value,
-      rateEurBase: new Big(value.rateEurBase.toString())
+      rateEurBase: new Big(value.rateEurBase.toString()),
     }));
   }
 
@@ -100,7 +99,7 @@ export class CurrenciesService {
       quoteAmount = eurAmount;
     } else {
       const quoteRate = rates.find((value) => value.symbol === symbolQuote);
-      quoteAmount = quoteRate.rateEurBase.div(eurAmount)
+      quoteAmount = quoteRate.rateEurBase.div(eurAmount);
     }
 
     return quoteAmount;

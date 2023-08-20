@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSubExpenseDto } from './dto/create-sub-expense.dto';
 import { UpdateSubExpenseDto } from './dto/update-sub-expense.dto';
-import {GroupMember, PrismaClient, SubExpense} from '@prisma/client';
+import { PrismaClient, SubExpense } from '@prisma/client';
 import { GroupMemberExpensesService } from './group-member-expenses/group-member-expenses.service';
-import {GroupMemberEntity} from "../../group-members/entities/group-member.entity";
-import {SubExpenseEntity} from "./entities/sub-expense.entity";
-import Big from "big.js";
+import { SubExpenseEntity } from './entities/sub-expense.entity';
+import Big from 'big.js';
+
 const prisma = new PrismaClient();
 
 interface SubExpenseMany {
@@ -111,33 +111,37 @@ export class SubExpensesService {
   }
 
   private async includeAmount(
-      subExpense: SubExpense,
+    subExpense: SubExpense,
   ): Promise<SubExpenseEntity> {
-    const memberExpenses = await this.groupMemberExpensesService.findAll(subExpense.id);
+    const memberExpenses = await this.groupMemberExpensesService.findAll(
+      subExpense.id,
+    );
 
-    let amount: Big
-    let amountReferenceCurrency: Big
-    let currency: string
+    let amount: Big;
+    let amountReferenceCurrency: Big;
+    let currency: string;
 
-    memberExpenses.forEach(value => {
-      if (value.role === "SPONSOR") {
-        amount = value.amount.add(amount || 0)
-        amountReferenceCurrency = value.amountReferenceCurrency.add(amountReferenceCurrency || 0)
-        currency = value.currency
+    memberExpenses.forEach((value) => {
+      if (value.role === 'SPONSOR') {
+        amount = value.amount.add(amount || 0);
+        amountReferenceCurrency = value.amountReferenceCurrency.add(
+          amountReferenceCurrency || 0,
+        );
+        currency = value.currency;
       }
-    })
+    });
 
     return {
       ...subExpense,
       amount,
       amountReferenceCurrency,
       currency,
-      groupMemberExpenses: memberExpenses
+      groupMemberExpenses: memberExpenses,
     };
   }
 
   private async includeAmountBulk(
-      subExpenses: SubExpense[],
+    subExpenses: SubExpense[],
   ): Promise<SubExpenseEntity[]> {
     const list: SubExpenseEntity[] = [];
 

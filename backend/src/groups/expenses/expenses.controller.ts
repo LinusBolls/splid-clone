@@ -62,14 +62,14 @@ export class ExpensesController {
 
   @Get(':id')
   async findOne(@Param('id') id: string, @Param('groupId') groupId: string) {
+    if (!(await this.groupsService.exists(groupId))) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
     const findResult = await this.expensesService.findOne(id, groupId);
 
     if (findResult === null) {
       throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
-    }
-
-    if (!(await this.groupsService.exists(groupId))) {
-      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
 
     return this.expenseMapper.dtoFromEntity(findResult);
@@ -81,12 +81,12 @@ export class ExpensesController {
     @Param('groupId') groupId: string,
     @Body() updateExpenseDto: UpdateExpenseDto,
   ) {
-    if (!(await this.expensesService.exists(id, groupId))) {
-      throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
-    }
-
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!(await this.expensesService.exists(id, groupId))) {
+      throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
     }
 
     for (const categoryId of updateExpenseDto.categoryIds) {
@@ -106,14 +106,14 @@ export class ExpensesController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id: string, @Param('groupId') groupId: string) {
-    if (!(await this.expensesService.exists(id, groupId))) {
-      throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
-    }
-
     if (!(await this.groupsService.exists(groupId))) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
 
-    return this.expensesService.remove(id);
+    if (!(await this.expensesService.exists(id, groupId))) {
+      throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.expensesService.remove(id, groupId);
   }
 }

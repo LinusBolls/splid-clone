@@ -1,11 +1,20 @@
-import {Body, Controller, Get, HttpException, HttpStatus, Param, ParseArrayPipe, Put,} from '@nestjs/common';
-import {GroupMemberExpensesService} from './group-member-expenses.service';
-import {UpdateGroupMemberExpenseDto} from './dto/update-group-member-expense.dto';
-import {GroupsService} from 'src/groups/groups.service';
-import {SubExpensesService} from '../sub-expenses.service';
-import {ExpensesService} from '../../expenses.service';
-import {GroupMembersService} from 'src/groups/group-members/group-members.service';
-import {GroupMemberExpenseMapper} from "./mapping/group-member-expense.mapper";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseArrayPipe,
+  Put,
+} from '@nestjs/common';
+import { GroupMemberExpensesService } from './group-member-expenses.service';
+import { UpdateGroupMemberExpenseDto } from './dto/update-group-member-expense.dto';
+import { GroupsService } from 'src/groups/groups.service';
+import { SubExpensesService } from '../sub-expenses.service';
+import { ExpensesService } from '../../expenses.service';
+import { GroupMembersService } from 'src/groups/group-members/group-members.service';
+import { GroupMemberExpenseMapper } from './mapping/group-member-expense.mapper';
 
 @Controller(
   '/groups/:groupId/expenses/:expenseId/sub-expenses/:subExpenseId/group-member-expenses',
@@ -68,16 +77,16 @@ export class GroupMemberExpensesController {
 
   @Put()
   async update(
-      @Param('groupId') groupId: string,
-      @Param('expenseId') expenseId: string,
-      @Param('subExpenseId') subExpenseId: string,
-      @Body(new ParseArrayPipe({ items: UpdateGroupMemberExpenseDto }))
-          updateGroupMemberExpenseDtos: UpdateGroupMemberExpenseDto[],
+    @Param('groupId') groupId: string,
+    @Param('expenseId') expenseId: string,
+    @Param('subExpenseId') subExpenseId: string,
+    @Body(new ParseArrayPipe({ items: UpdateGroupMemberExpenseDto }))
+    updateGroupMemberExpenseDtos: UpdateGroupMemberExpenseDto[],
   ) {
     const groupAndExpenseErr = await this.checkIfGroupExpenseAndSubExpenseExist(
-        groupId,
-        expenseId,
-        subExpenseId,
+      groupId,
+      expenseId,
+      subExpenseId,
     );
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
@@ -87,12 +96,12 @@ export class GroupMemberExpensesController {
     }
 
     const result = await this.groupMemberExpensesService.update(
-        updateGroupMemberExpenseDtos,
-        subExpenseId,
-        groupId
+      updateGroupMemberExpenseDtos,
+      subExpenseId,
+      groupId,
     );
 
-    return this.groupMemberExpenseMapper.dtosFromEntities(result)
+    return this.groupMemberExpenseMapper.dtosFromEntities(result);
   }
 
   async checkIfGroupExpenseAndSubExpenseExist(

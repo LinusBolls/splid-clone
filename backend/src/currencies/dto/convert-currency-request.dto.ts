@@ -1,6 +1,6 @@
 import { IsDate, IsNumber, IsOptional, Length } from 'class-validator';
 import { Type } from 'class-transformer';
-import Big from "big.js";
+import Big from 'big.js';
 
 export class ConvertCurrencyRequestDto {
   @Length(3, 3)

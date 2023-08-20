@@ -1,13 +1,12 @@
-import Big from "big.js";
-import {GroupMemberDto} from "../../../../group-members/dto/group-member.dto";
-import {IsDate} from "class-validator";
-import {Expose} from "class-transformer";
+import Big from 'big.js';
+import { GroupMemberDto } from '../../../../group-members/dto/group-member.dto';
+import { Expose } from 'class-transformer';
 
 export class GroupMemberExpenseDto {
   @Expose() id: string;
 
   @Expose() amountReferenceCurrency: Big;
-  @Expose() currency: string
+  @Expose() currency: string;
   @Expose() amount: Big;
   @Expose() role: keyof typeof GROUP_MEMBER_EXPENSE_ROLE;
   @Expose() date: Date;

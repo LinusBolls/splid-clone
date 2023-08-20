@@ -1,8 +1,18 @@
-import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put,} from '@nestjs/common';
-import {ExpenseCategoriesService} from './expense-categories.service';
-import {CreateExpenseCategoryDto} from './dto/create-expense-category.dto';
-import {UpdateExpenseCategoryDto} from './dto/update-expense-category.dto';
-import {GroupsService} from '../groups.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { ExpenseCategoriesService } from './expense-categories.service';
+import { CreateExpenseCategoryDto } from './dto/create-expense-category.dto';
+import { UpdateExpenseCategoryDto } from './dto/update-expense-category.dto';
+import { GroupsService } from '../groups.service';
 
 @Controller('/groups/:groupId/expense-categories')
 export class ExpenseCategoriesController {

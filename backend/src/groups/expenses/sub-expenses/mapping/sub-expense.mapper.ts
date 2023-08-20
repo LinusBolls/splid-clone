@@ -1,9 +1,8 @@
-import {Mapper, Mappings} from 'ts-mapstruct';
-import {Injectable} from '@nestjs/common';
-import {Prisma, SubExpense} from '@prisma/client';
-import {SubExpenseEntity} from "../entities/sub-expense.entity";
-import {SubExpenseDto} from "../dto/sub-expense.dto";
-import Big from "big.js";
+import { Mapper, Mappings } from 'ts-mapstruct';
+import { Injectable } from '@nestjs/common';
+import { Prisma, SubExpense } from '@prisma/client';
+import { SubExpenseEntity } from '../entities/sub-expense.entity';
+import { SubExpenseDto } from '../dto/sub-expense.dto';
 
 @Injectable()
 @Mapper()
@@ -27,7 +26,9 @@ export class SubExpenseMapper {
   }
 
   @Mappings()
-  groupMemberPaymentsEnhancedEntityFromDb(expense: SubExpenseWithGroupMemberExpenses): SubExpenseEntity {
+  groupMemberPaymentsEnhancedEntityFromDb(
+    expense: SubExpenseWithGroupMemberExpenses,
+  ): SubExpenseEntity {
     return new SubExpenseEntity();
   }
 
@@ -40,15 +41,16 @@ export class SubExpenseMapper {
   }
 }
 
-const subExpenseWithGroupMemberExpenses = Prisma.validator<Prisma.SubExpenseDefaultArgs>()({
-  include: {
-    groupMemberExpenses: {
-      include: {
-        groupMember: true,
+const subExpenseWithGroupMemberExpenses =
+  Prisma.validator<Prisma.SubExpenseDefaultArgs>()({
+    include: {
+      groupMemberExpenses: {
+        include: {
+          groupMember: true,
+        },
       },
     },
-  },
-});
+  });
 
 type SubExpenseWithGroupMemberExpenses = Prisma.SubExpenseGetPayload<
   typeof subExpenseWithGroupMemberExpenses
