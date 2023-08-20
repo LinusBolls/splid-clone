@@ -8,4 +8,12 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   currency: string;
 
+<<<<<<< Updated upstream
+=======
+  @IsNotEmpty()
+  senderId: string;
+
+  @IsNotEmpty()
+  receiverId: string;
+>>>>>>> Stashed changes
 }
