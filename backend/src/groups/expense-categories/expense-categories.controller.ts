@@ -1,18 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
-import { ExpenseCategoriesService } from './expense-categories.service';
-import { CreateExpenseCategoryDto } from './dto/create-expense-category.dto';
-import { UpdateExpenseCategoryDto } from './dto/update-expense-category.dto';
-import { GroupsService } from '../groups.service';
+import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put,} from '@nestjs/common';
+import {ExpenseCategoriesService} from './expense-categories.service';
+import {CreateExpenseCategoryDto} from './dto/create-expense-category.dto';
+import {UpdateExpenseCategoryDto} from './dto/update-expense-category.dto';
+import {GroupsService} from '../groups.service';
 
 @Controller('/groups/:groupId/expense-categories')
 export class ExpenseCategoriesController {
@@ -60,7 +50,7 @@ export class ExpenseCategoriesController {
     return findResult;
   }
 
-  @Patch(':id')
+  @Put(':id')
   async update(
     @Param('id') id: string,
     @Param('groupId') groupId: string,
@@ -92,7 +82,7 @@ export class ExpenseCategoriesController {
     }
 
     try {
-      return await this.expensesCategoryService.remove(id, groupId);
+      await this.expensesCategoryService.remove(id, groupId);
     } catch (e) {
       throw new HttpException(
         'Category is still associated to at least 1 expense',

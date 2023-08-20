@@ -104,7 +104,7 @@ CREATE TABLE "GroupMemberExpense" (
     "amountReferenceCurrency" DECIMAL(65,30) NOT NULL,
     "currency" TEXT NOT NULL,
     "amount" DECIMAL(65,30) NOT NULL,
-    "role" TEXT NOT NULL,
+    "role" "GROUP_MEMBER_EXPENSE_ROLE" NOT NULL,
     "subExpenseId" TEXT NOT NULL,
     "groupMemberId" TEXT NOT NULL,
 
@@ -129,6 +129,20 @@ CREATE TABLE "CurrencyRate" (
     "rateEurBase" DECIMAL(65,30) NOT NULL,
 
     CONSTRAINT "CurrencyRate_pkey" PRIMARY KEY ("symbol","date")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "amountReferenceCurrency" DECIMAL(65,30) NOT NULL,
+    "currency" TEXT NOT NULL,
+    "amount" DECIMAL(65,30) NOT NULL,
+    "senderId" TEXT NOT NULL,
+    "receiverId" TEXT NOT NULL,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -169,3 +183,9 @@ ALTER TABLE "GroupMemberExpense" ADD CONSTRAINT "GroupMemberExpense_groupMemberI
 
 -- AddForeignKey
 ALTER TABLE "CurrencyRate" ADD CONSTRAINT "CurrencyRate_symbol_date_fkey" FOREIGN KEY ("symbol", "date") REFERENCES "Currency"("symbol", "date") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "GroupMember"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "GroupMember"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

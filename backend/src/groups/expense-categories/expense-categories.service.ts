@@ -90,7 +90,7 @@ export class ExpenseCategoriesService {
       throw new Error('Category is associated to Expenses');
     }
 
-    return prisma.expenseCategory.delete({
+    await prisma.expenseCategory.delete({
       where: {
         id,
         groupId,
