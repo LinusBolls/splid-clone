@@ -1,11 +1,10 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { PrismaClient } from '@prisma/client';
-import Big from 'big.js';
-import { PaymentMapper } from './mapping/payment.mapper';
-import { CurrenciesService } from '../../currencies/currencies.service';
-import { GroupsService } from '../groups.service';
+import {forwardRef, Inject, Injectable} from '@nestjs/common';
+import {CreatePaymentDto} from './dto/create-payment.dto';
+import {UpdatePaymentDto} from './dto/update-payment.dto';
+import {PrismaClient} from '@prisma/client';
+import {PaymentMapper} from './mapping/payment.mapper';
+import {CurrenciesService} from '../../currencies/currencies.service';
+import {GroupsService} from '../groups.service';
 
 const prisma = new PrismaClient();
 
@@ -25,7 +24,6 @@ export class PaymentService {
       data: {
         ...createPaymentDto,
         amount: createPaymentDto.amount.toString(),
-        //TODO: Change the 23
         amountReferenceCurrency: (
           await this.currenciesService.convert(
             createPaymentDto.currency,
@@ -157,6 +155,8 @@ export class PaymentService {
     updatePaymentDto: UpdatePaymentDto,
     groupId: string,
   ) {
+    const groupCurrency = (await this.groupsService.findOne(groupId)).currency;
+
     const result = await prisma.payment.update({
       where: {
         id,
@@ -165,8 +165,14 @@ export class PaymentService {
       data: {
         ...updatePaymentDto,
         amount: updatePaymentDto.amount.toString(),
-        //TODO: Change the 23
-        amountReferenceCurrency: new Big(23).toString(),
+        amountReferenceCurrency: (
+            await this.currenciesService.convert(
+                updatePaymentDto.currency,
+                groupCurrency,
+                updatePaymentDto.amount,
+                updatePaymentDto.date,
+            )
+        ).toString(),
       },
       include: {
         sender: true,
