@@ -1,11 +1,15 @@
 import { Injectable } from "@nestjs/common";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  ListBucketsCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 @Injectable()
 export class FilestoreService {
   private client: S3Client;
-  buckets: string[] = ['member-photo', 'group-photo'];
+  buckets: string[] = ["member-photo", "group-photo"];
 
   constructor() {
     this.client = new S3Client({
@@ -18,6 +22,31 @@ export class FilestoreService {
         secretAccessKey: `same as -secretkey`,
       },
     });
+
+    // fixme, race condition between possible first uploads and bucket creation
+    this.initBuckets();
+  }
+
+  private async initBuckets() {
+    const existing = await this.listBuckets();
+    for (const bucket of this.buckets) {
+      console.log(bucket + ' ' + existing.includes(bucket));
+      if (!existing.includes(bucket)) {
+        await this.client.send(
+          new PutObjectCommand({
+            Key: bucket,
+            Bucket: bucket,
+          }),
+        );
+        console.debug(`Created bucket ${bucket}`);
+      }
+    }
+  }
+
+  private async listBuckets(): Promise<string[]> {
+    const data = await this.client.send(new ListBucketsCommand({}));
+    console.log(data.Buckets);
+    return data.Buckets.map((bucket) => bucket.Name);
   }
 
   private async createPresignedUrl(bucket: string) {
