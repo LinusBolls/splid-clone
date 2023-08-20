@@ -177,7 +177,4 @@ model Payment {
   senderId   String
   receiver   GroupMember @relation("received", fields: [receiverId], references: [id])
   receiverId String
-
-  group   Group  @relation(fields: [groupId], references: [id])
-  groupId String
 }
