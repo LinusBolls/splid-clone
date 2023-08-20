@@ -17,7 +17,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { GroupsService } from '../groups.service';
 import { GroupMembersService } from '../group-members/group-members.service';
 
-@Controller('/groups/:groupId/payment')
+@Controller('/groups/:groupId/payments')
 export class PaymentController {
   constructor(
     private readonly paymentService: PaymentService,

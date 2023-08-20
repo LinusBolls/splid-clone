@@ -38,6 +38,21 @@ export class GroupMemberExpensesService {
     );
   }
 
+  async findAllExpensesByGroupMemberId(groupMemberId: string) {
+    const dbResult = await prisma.groupMemberExpense.findMany({
+      where: {
+        groupMemberId,
+      },
+      include: {
+        groupMember: true,
+      },
+    });
+
+    return this.groupMemberExpenseMapper.entitiesFromDb(
+      dbResult,
+    );
+  }
+
   async findOne(id: string, subExpenseId: string) {
     const result = await prisma.groupMemberExpense.findFirst({
       where: {

@@ -37,6 +37,21 @@ export class PaymentService {
     });
   }
 
+  findAllPaymentsByGroupMemberId(groupMemberId: string) {
+    return prisma.payment.findMany ({
+      where: {
+        OR: [
+          {
+            senderId: groupMemberId,
+          },
+          {
+            receiverId: groupMemberId,
+          }
+        ]
+      }
+    }) 
+  }
+
   findAll(groupId: string) {
     return prisma.payment.findMany({
       where: {
