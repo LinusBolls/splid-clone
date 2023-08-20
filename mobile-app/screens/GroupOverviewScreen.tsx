@@ -1,5 +1,12 @@
-import dayjs from 'dayjs';
-import { Pressable, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Animated, I18nManager, Pressable, Text, View } from 'react-native';
+import {
+  NavigationState,
+  SceneMap,
+  SceneRendererProps,
+  TabBar,
+  TabView,
+} from 'react-native-tab-view';
 
 import ActivityList, { ExpenseActivity } from '../components/ActivityList';
 import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
@@ -7,6 +14,9 @@ import { useExpensesStore } from '../stores/expensesStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
 import { useNavigation } from '../stores/navigationStore';
+
+const formatPriceEur = (price: number) =>
+  price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
 
 export default function GroupOverviewScreen({ navigation }: any) {
   const { activeGroupId } = useNavigation();
@@ -17,9 +27,7 @@ export default function GroupOverviewScreen({ navigation }: any) {
 
   const expenseCategoriesStore = useExpenseCategoriesStore();
 
-  const expenses = expensesStore.expenses.filter(
-    (i) => i.groupId === activeGroupId
-  );
+  const expenses = expensesStore.expenses;
 
   const navigationStore = useNavigation();
 
@@ -60,6 +68,7 @@ export default function GroupOverviewScreen({ navigation }: any) {
 
     return {
       ...i,
+      groupId: i.groupId,
       totalAmount,
       amountForYou: totalAmount,
       categories: categories.map((i) => ({ id: i.id, title: i.displayName })),
@@ -74,13 +83,229 @@ export default function GroupOverviewScreen({ navigation }: any) {
     };
   });
 
+  const tabs: {
+    id: string;
+    title: string;
+    totalAmount: number;
+    activities: ExpenseActivity[];
+  }[] = [
+    {
+      id: 'tab:system:all',
+      title: 'All',
+      totalAmount: activities.reduce((sum, i) => sum + i.totalAmount, 0),
+      activities: activities,
+    },
+    ...groupsStore.groups.map((i) => ({
+      ...i,
+      totalAmount: activities
+        .filter((j) => j.groupId === i.id)
+        .reduce((sum, i) => sum + i.totalAmount, 0),
+      activities: activities.filter((j) => j.groupId === i.id),
+    })),
+  ];
+
+  const sceneMap = tabs.reduce<any>(
+    (sum, i) => ({
+      ...sum,
+      [i.id]: () => (
+        <ActivityList
+          activities={i.activities}
+          onActivityClick={(activity) => {
+            navigationStore.actions.setActiveExpenseId(activity.id);
+
+            navigation.navigate('SwipeActivitiesModal');
+          }}
+        />
+      ),
+    }),
+    {}
+  );
+
+  const routes = tabs.map((i) => ({
+    key: i.id,
+    title: i.title,
+    totalAmount: i.totalAmount,
+  }));
+
+  const [index, setIndex] = useState(0);
+
+  const renderScene = SceneMap(sceneMap);
+
+  const [outerWidth, setOuterWidth] = useState(0);
+
+  const [anim, setAnim] = useState<any>(null);
+
+  const renderIndicator = (
+    props: SceneRendererProps & {
+      navigationState: { index: number; routes: { key: string }[] };
+      getTabWidth: (i: number) => number;
+    }
+  ) => {
+    const inputRange = props.navigationState.routes.map((_, i) => i);
+
+    const translateXOutputRange = inputRange.map(
+      (i) =>
+        (props.navigationState.routes
+          .slice(0, i)
+          .reduce((totalWidth, j) => totalWidth + tabWidths[j.key], 0) || 0) *
+        (I18nManager.isRTL ? -1 : 1)
+    );
+
+    const widthOutputRange = inputRange.map(
+      (i) => (tabWidths[props.navigationState.routes[i].key] || 0) / 100
+    );
+
+    const translateX = props.position.interpolate({
+      inputRange,
+      outputRange: translateXOutputRange,
+    });
+
+    if (!anim) {
+      console.log('test');
+
+      // setAnim(props.position.interpolate({
+      //   inputRange,
+      //   outputRange: inputRange.map(
+      //     (i) =>
+      //       (props.navigationState.routes
+      //         .slice(0, i)
+      //         .reduce((totalWidth, j) => totalWidth + tabWidths[j.key], 0) || 0) *
+      //       (I18nManager.isRTL ? -1 : 1) * -1
+      //   ),
+      // }));
+      setAnim(translateX);
+    }
+
+    const scaleX = props.position.interpolate({
+      inputRange,
+      outputRange: widthOutputRange,
+    });
+
+    // const [current, setCurrent] = useState(new Animated.Value(0));
+
+    // Animated.timing(current, {
+    //   toValue: 100,
+    //   duration: 100,
+    //   useNativeDriver: false,
+    // }).start();
+
+    return (
+      <Animated.View style={{ transform: [{ translateX }] }}>
+        <Animated.View
+          style={{
+            backgroundColor: 'white',
+            width: 100,
+            height: 48,
+            // borderRadius: 24,
+            transform: [
+              { translateX: -50 }, // Move the pivot point to the middle left
+              { scaleX },
+              { translateX: 50 }, // Move the pivot point back
+            ],
+          }}
+          onLayout={(event) => {
+            setOuterWidth(event.nativeEvent.layout.width);
+          }}
+        />
+      </Animated.View>
+    );
+  };
+
+  const [tabWidths, setTabWidths] = useState<Record<string, number>>({});
+
+  const updateTabWidth = (index: string, width: number) => {
+    setTabWidths((prev) => {
+      const newWidths = { ...prev };
+
+      newWidths[index] = width;
+
+      return newWidths;
+    });
+  };
+
+  const renderTabBar = (
+    props: SceneRendererProps & {
+      navigationState: NavigationState<{
+        key: string;
+        title: string;
+        totalAmount: number;
+      }>;
+    }
+  ) => {
+    const inputRange = props.navigationState.routes.map((_, i) => i);
+
+    const totalWidth =
+      props.navigationState.routes.reduce(
+        (totalWidth, j) => totalWidth + tabWidths[j.key],
+        0
+      ) || 0;
+
+    const maxOffset = totalWidth - props.layout.width;
+
+    const leftOrRight = I18nManager.isRTL ? 1 : -1;
+
+    const translateXOutputRange = inputRange.map((i) => {
+      const ratioBetween0And1 = (1 / props.navigationState.routes.length) * i;
+
+      return ratioBetween0And1 * maxOffset * leftOrRight;
+    });
+
+    const translateX = props.position.interpolate({
+      inputRange,
+      outputRange: translateXOutputRange,
+    });
+
+    return (
+      <Animated.View
+        style={{
+          transform: [{ translateX }],
+
+          width: totalWidth,
+        }}
+      >
+        <TabBar
+          renderIndicator={renderIndicator}
+          renderTabBarItem={(itemProps) => {
+            return (
+              <Pressable
+                onLayout={(event) => {
+                  const width = event.nativeEvent.layout.width;
+
+                  updateTabWidth(itemProps.key, width);
+                }}
+                onPress={itemProps.onPress}
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 48,
+                  paddingHorizontal: 12,
+                }}
+              >
+                <Text style={{ fontSize: 13, color: '#222' }}>
+                  {itemProps.route.title}
+                </Text>
+                <Text style={{ fontSize: 10, color: '#888' }}>
+                  {formatPriceEur(itemProps.route.totalAmount)}
+                </Text>
+              </Pressable>
+            );
+          }}
+          {...props}
+          indicatorStyle={{ backgroundColor: '#682BE9' }}
+          style={{ backgroundColor: 'transparent' }}
+          labelStyle={{ color: '#222', textTransform: 'none' }}
+        />
+      </Animated.View>
+    );
+  };
+
   return (
     <View
       style={{
         minHeight: '100%',
         paddingHorizontal: 16,
 
-        backgroundColor: 'white',
+        backgroundColor: '#F7F7F7',
       }}
     >
       <View
@@ -96,63 +321,16 @@ export default function GroupOverviewScreen({ navigation }: any) {
       <Pressable onPress={() => navigation.navigate('CreateExpense')}>
         <Text style={{}}>New expense</Text>
       </Pressable>
-      <ActivityList
-        activities={activities}
-        onActivityClick={(activity) => {
-          navigationStore.actions.setActiveExpenseId(activity.id);
-
-          navigation.navigate('SwipeActivitiesModal');
-        }}
+      <Pressable onPress={() => navigation.navigate('CreateGroup')}>
+        <Text style={{}}>New group</Text>
+      </Pressable>
+      <TabView
+        style={{ width: 'auto' }}
+        navigationState={{ index, routes }}
+        renderScene={renderScene}
+        renderTabBar={renderTabBar}
+        onIndexChange={setIndex}
       />
     </View>
   );
 }
-
-// import React, { useState } from 'react';
-// import { View, StyleSheet } from 'react-native';
-// import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
-
-// const FirstTab = () => <View style={[styles.scene, { backgroundColor: 'lightblue' }]} />;
-// const SecondTab = () => <View style={[styles.scene, { backgroundColor: 'lightpink' }]} />;
-// const ThirdTab = () => <View style={[styles.scene, { backgroundColor: 'lightgreen' }]} />;
-
-// const TabsExample = () => {
-//   const [index, setIndex] = useState(0);
-//   const [routes] = useState([
-//     { key: 'first', title: 'First' },
-//     { key: 'second', title: 'Second' },
-//     { key: 'third', title: 'Third' },
-//   ]);
-
-//   const renderScene = SceneMap({
-//     first: FirstTab,
-//     second: SecondTab,
-//     third: ThirdTab,
-//   });
-
-//   const renderTabBar = props => (
-//     <TabBar
-//       {...props}
-//       indicatorStyle={{ backgroundColor: 'blue' }} // Line color under the active tab
-//       style={{ backgroundColor: 'white' }} // Tab bar background color
-//       labelStyle={{ color: 'black' }} // Tab label color
-//     />
-//   );
-
-//   return (
-//     <TabView
-//       navigationState={{ index, routes }}
-//       renderScene={renderScene}
-//       renderTabBar={renderTabBar}
-//       onIndexChange={setIndex}
-//     />
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   scene: {
-//     flex: 1,
-//   },
-// });
-
-// export default TabsExample;

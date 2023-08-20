@@ -1,17 +1,27 @@
 import { create } from 'zustand';
 
-export interface IdentityStore {
-  associatedMemberId: string | null;
-  actions: {
-    setAssociatedMemberId: (associatedMemberId: string | null) => void;
-  };
-}
-export const useIdentityStore = create<IdentityStore>((set) => ({
-  associatedMemberId: null,
-  actions: {
-    setAssociatedMemberId: (associatedMemberId) => {
-      set(() => ({ associatedMemberId }));
-    },
-  },
-}));
+import PalmtreeClient from '../services/PalmtreeClient';
+import { persist } from './persist';
+import StorageKey from './StorageKey';
+
+export type IdentityStore =
+  | {
+      isLoading: true;
+      client: null;
+      actions: {};
+    }
+  | {
+      isLoading: false;
+      client: PalmtreeClient;
+      actions: {};
+    };
+export const useIdentityStore = create<IdentityStore>(
+  // persist(StorageKey.IDENTITY,
+  (set) => ({
+    isLoading: false,
+    client: new PalmtreeClient(),
+    actions: {},
+  })
+  // )
+);
 export const useIdentity = useIdentityStore;

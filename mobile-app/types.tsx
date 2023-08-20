@@ -23,6 +23,8 @@ export type RootStackParamList = {
   CreateExpense: undefined;
   CreateGroup: undefined;
   NotFound: undefined;
+  CreateOrJoinGroup: undefined;
+  JoinGroup: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =

@@ -45,9 +45,11 @@ export default function CreateNewGroup({ navigation }: any) {
       groupDraftStore.groupMembers
     );
     groupDraftStore.actions.clear();
+
+    navigation.goBack();
   }
   function onCancel() {
-    alert('sus');
+    navigation.goBack();
   }
 
   const titleInputRef = useRef<TextInput>(null);

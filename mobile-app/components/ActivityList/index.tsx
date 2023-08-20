@@ -24,6 +24,7 @@ const BalanceInfluence = {
 
 export interface ExpenseActivity {
   id: string;
+  groupId: string;
   date: Date;
   title: string;
 

@@ -1,6 +1,9 @@
 import uuid from 'react-native-uuid';
 import { create } from 'zustand';
 
+import { persist } from './persist';
+import StorageKey from './StorageKey';
+
 export interface Share {
   id: string;
   memberId: string;
@@ -44,35 +47,40 @@ export interface ExpensesStore {
   };
 }
 
-export const useExpensesStore = create<ExpensesStore>((set) => ({
-  expenses: [],
-  subexpenses: [],
-  actions: {
-    createExpense: (groupId, expense) => {
-      const newExpense = {
-        id: uuid.v4() as string,
-        groupId,
-        ...expense,
-      };
-      set((store) => ({ ...store, expenses: [...store.expenses, newExpense] }));
+export const useExpensesStore = create<ExpensesStore>(
+  persist(StorageKey.EXPENSE, (set) => ({
+    expenses: [],
+    subexpenses: [],
+    actions: {
+      createExpense: (groupId, expense) => {
+        const newExpense = {
+          id: uuid.v4() as string,
+          groupId,
+          ...expense,
+        };
+        set((store) => ({
+          ...store,
+          expenses: [...store.expenses, newExpense],
+        }));
 
-      return newExpense;
+        return newExpense;
+      },
+      deleteExpense: (expenseId) => {
+        set((store) => ({
+          ...store,
+          expenses: store.expenses.filter((i) => i.id !== expenseId),
+        }));
+      },
+      createSubexpenses: (subexpenses) => {
+        const newSubexpenses = subexpenses.map<Subexpense>((i) => ({
+          id: uuid.v4() as string,
+          ...i,
+        }));
+        set((store) => ({
+          subexpenses: [...store.subexpenses, ...newSubexpenses],
+        }));
+        return newSubexpenses;
+      },
     },
-    deleteExpense: (expenseId) => {
-      set((store) => ({
-        ...store,
-        expenses: store.expenses.filter((i) => i.id !== expenseId),
-      }));
-    },
-    createSubexpenses: (subexpenses) => {
-      const newSubexpenses = subexpenses.map<Subexpense>((i) => ({
-        id: uuid.v4() as string,
-        ...i,
-      }));
-      set((store) => ({
-        subexpenses: [...store.subexpenses, ...newSubexpenses],
-      }));
-      return newSubexpenses;
-    },
-  },
-}));
+  }))
+);

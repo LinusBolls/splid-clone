@@ -1,6 +1,9 @@
 import uuid from 'react-native-uuid';
 import { create } from 'zustand';
 
+import { persist } from './persist';
+import StorageKey from './StorageKey';
+
 export interface ExpenseCategory {
   id: string;
   groupId: string;
@@ -19,7 +22,7 @@ export interface ExpenseCategoriesStore {
   };
 }
 export const useExpenseCategoriesStore = create<ExpenseCategoriesStore>(
-  (set) => ({
+  persist(StorageKey.EXPENSE_CATEGORY, (set) => ({
     categories: [
       {
         id: 'expense-category:default:restaurant',
@@ -49,5 +52,5 @@ export const useExpenseCategoriesStore = create<ExpenseCategoriesStore>(
         }));
       },
     },
-  })
+  }))
 );

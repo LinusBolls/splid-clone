@@ -1,6 +1,9 @@
 import uuid from 'react-native-uuid';
 import { create } from 'zustand';
 
+import { persist } from './persist';
+import StorageKey from './StorageKey';
+
 export interface GroupMember {
   id: string;
   groupId: string;
@@ -23,47 +26,49 @@ export interface GroupMembersStore {
     renameMember: (memberId: string, displayName: string) => void;
   };
 }
-export const useGroupMembersStore = create<GroupMembersStore>((set) => ({
-  members: [],
+export const useGroupMembersStore = create<GroupMembersStore>(
+  persist(StorageKey.GROUP_MEMBER, (set) => ({
+    members: [],
 
-  actions: {
-    createMember: (groupId, member) => {
-      const newMember = {
-        id: uuid.v4() as string,
-        groupId,
+    actions: {
+      createMember: (groupId, member) => {
+        const newMember = {
+          id: uuid.v4() as string,
+          groupId,
 
-        displayName: member.displayName,
-      };
-      set((store) => {
-        return { ...store, members: [...store.members, newMember] };
-      });
-      return newMember;
-    },
-    createMembers: (groupId, members) => {
-      const newMembers = members.map((i) => ({
-        id: uuid.v4() as string,
-        groupId,
+          displayName: member.displayName,
+        };
+        set((store) => {
+          return { ...store, members: [...store.members, newMember] };
+        });
+        return newMember;
+      },
+      createMembers: (groupId, members) => {
+        const newMembers = members.map((i) => ({
+          id: uuid.v4() as string,
+          groupId,
 
-        displayName: i.displayName,
-      }));
-      set((store) => {
-        return { ...store, members: [...store.members, ...newMembers] };
-      });
-      return newMembers;
+          displayName: i.displayName,
+        }));
+        set((store) => {
+          return { ...store, members: [...store.members, ...newMembers] };
+        });
+        return newMembers;
+      },
+      deleteMember: (memberId) => {
+        set((store) => ({
+          ...store,
+          members: store.members.filter((member) => member.id !== memberId),
+        }));
+      },
+      renameMember: (memberId, displayName) => {
+        set((store) => ({
+          ...store,
+          members: store.members.map((i) =>
+            i.id === memberId ? { ...i, displayName } : i
+          ),
+        }));
+      },
     },
-    deleteMember: (memberId) => {
-      set((store) => ({
-        ...store,
-        members: store.members.filter((member) => member.id !== memberId),
-      }));
-    },
-    renameMember: (memberId, displayName) => {
-      set((store) => ({
-        ...store,
-        members: store.members.map((i) =>
-          i.id === memberId ? { ...i, displayName } : i
-        ),
-      }));
-    },
-  },
-}));
+  }))
+);

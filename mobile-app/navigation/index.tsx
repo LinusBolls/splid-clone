@@ -13,10 +13,13 @@ import { maybeCompleteAuthSession } from 'expo-web-browser';
 import { ColorSchemeName } from 'react-native';
 
 import CreateNewGroup from '../screens/CreateNewGroup';
+import CreateOrJoinGroupScreen from '../screens/CreateOrJoinGroupScreen';
 import EditExpenseModal from '../screens/EditExpenseModal';
 import EditExpenseScreen from '../screens/EditExpenseScreen';
 import GroupOverviewScreen from '../screens/GroupOverviewScreen';
+import JoinGroupScreen from '../screens/JoinGroupScreen';
 import SwipeActivitiesModal from '../screens/SwipeActivitiesModal';
+import { useGroupsStore } from '../stores/groupsStore';
 import { useNavigation } from '../stores/navigationStore';
 import { RootStackParamList } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
@@ -47,14 +50,29 @@ maybeCompleteAuthSession();
 function RootNavigator() {
   const navigationStore = useNavigation();
 
+  const groupsStore = useGroupsStore();
+
   const activeGroupId = navigationStore.activeGroupId;
 
   if (!activeGroupId) {
+    if (groupsStore.groups.length) {
+      navigationStore.actions.setActiveGroupId(groupsStore.groups[0].id);
+    }
     return (
       <Stack.Navigator>
         <Stack.Screen
+          name="CreateOrJoinGroup"
+          component={CreateOrJoinGroupScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="CreateGroup"
           component={CreateNewGroup}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="JoinGroup"
+          component={JoinGroupScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
@@ -71,6 +89,16 @@ function RootNavigator() {
       <Stack.Screen
         name="CreateExpense"
         component={EditExpenseScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CreateGroup"
+        component={CreateNewGroup}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="JoinGroup"
+        component={JoinGroupScreen}
         options={{ headerShown: false }}
       />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
