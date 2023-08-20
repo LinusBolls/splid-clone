@@ -30,10 +30,18 @@ export class PaymentController {
     @Param('groupId') groupId: string,
     @Body() createPaymentDto: CreatePaymentDto,
   ) {
-    if (!(await this.groupsService.exists(groupId))) {
+    if (!(await this.groupsService.exists(groupId)))
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
-    }
-    //TODO: receiver and sender id cannot be the same 
+
+    if (!(await this.groupMembersService.exists(createPaymentDto.senderId))) 
+      throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
+
+    if (!(await this.groupMembersService.exists(createPaymentDto.receiverId))) 
+      throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
+
+    if (createPaymentDto.senderId === createPaymentDto.receiverId )
+      throw new HttpException("Sender and Reiceiver cannot be the same", HttpStatus.BAD_REQUEST)
+    
     return this.paymentService.create(createPaymentDto, groupId);
   }
 
@@ -43,17 +51,14 @@ export class PaymentController {
     @Query('senderId') senderId: string,
     @Query('receiverId') receiverId: string,
   ) {
-    if (!(await this.groupsService.exists(groupId))) {
+    if (!(await this.groupsService.exists(groupId))) 
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
-    }
 
-    if (!(await this.groupMembersService.exists(senderId))) {
+    if (!(await this.groupMembersService.exists(senderId))) 
       throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
-    }
 
-    if (!(await this.groupMembersService.exists(receiverId))) {
+    if (!(await this.groupMembersService.exists(receiverId))) 
       throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
-    }
 
     if (senderId != null)
       return this.paymentService.findAllFromSender(groupId, senderId)
@@ -83,13 +88,24 @@ export class PaymentController {
     @Param('id') id: string,
     @Body() updatePaymentDto: UpdatePaymentDto,
   ) {
-    if (!(await this.groupsService.exists(groupId))) {
+    if (!(await this.groupsService.exists(groupId))) 
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
-    }
+    
+    if (!(await this.groupMembersService.exists(updatePaymentDto.senderId))) 
+      throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
 
-    if (!(await this.paymentService.exists(id, groupId))) {
+    if (!(await this.groupMembersService.exists(updatePaymentDto.receiverId))) 
+      throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
+
+    if (!(await this.paymentService.exists(id, groupId))) 
       throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-    }
+    
+
+    if (updatePaymentDto.senderId === updatePaymentDto.receiverId && (updatePaymentDto.senderId != null && updatePaymentDto != null))
+      throw new HttpException("Sender and Reiceiver cannot be the same", HttpStatus.BAD_REQUEST)
+
+
+
 
     return this.paymentService.update(id, updatePaymentDto, groupId);
   }

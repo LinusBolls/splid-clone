@@ -54,6 +54,22 @@ export class PaymentService {
     });
   }
 
+  async groupMemberHasPayment(groupMemberId: string) {
+    return (
+      (await prisma.payment.findFirst({
+        where: {
+          OR: [
+            {
+              senderId: groupMemberId
+            },
+            {
+              receiverId: groupMemberId
+            }
+          ]
+        },
+      })) !== null
+    );
+  }
 
   async exists(id: string, groupId: string) {
     return (
@@ -89,5 +105,13 @@ export class PaymentService {
         groupId,
       },
     });
+  }
+
+  removeAllByGroupId(groupId: string) {
+    return prisma.payment.deleteMany({
+      where: {
+        groupId
+      }
+    })
   }
 }

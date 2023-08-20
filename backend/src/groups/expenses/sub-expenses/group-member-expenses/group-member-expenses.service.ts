@@ -55,6 +55,16 @@ export class GroupMemberExpensesService {
     });
   }
 
+  async groupMemberHasExpenses(groupMemberId: string) {
+    return (
+      (await prisma.groupMemberExpense.findFirst({
+        where: {
+          groupMemberId
+        },
+      })) !== null
+    );
+  }
+
   async exists(id: string, subExpenseId: string) {
     return (
       (await prisma.groupMemberExpense.findFirst({

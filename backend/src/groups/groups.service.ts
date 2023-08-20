@@ -6,6 +6,7 @@ import { CurrenciesService } from '../currencies/currencies.service';
 import { ExpensesService } from './expenses/expenses.service';
 import { ExpenseCategoriesService } from './expense-categories/expense-categories.service';
 import { GroupMembersService } from './group-members/group-members.service';
+import { PaymentService } from './payment/payment.service';
 
 const prisma = new PrismaClient();
 
@@ -16,6 +17,7 @@ export class GroupsService {
     private readonly currenciesService: CurrenciesService,
     private readonly expenseService: ExpensesService,
     private readonly groupMembersService: GroupMembersService,
+    private readonly paymentService: PaymentService
   ) {}
 
   async create(createGroupDto: CreateGroupDto) {
@@ -80,7 +82,10 @@ export class GroupsService {
     try {
       await this.expenseService.removeAllByGroupId(id);
 
+      await this.paymentService.removeAllByGroupId(id);
+
       await this.expenseCategoryService.removeAllByGroupId(id);
+
       await this.groupMembersService.removeAllByGroupId(id);
 
       await prisma.group.delete({
@@ -96,6 +101,8 @@ export class GroupsService {
         e.code === 'P2025'
       ) {
         throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
   }

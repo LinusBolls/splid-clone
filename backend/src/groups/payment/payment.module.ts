@@ -7,6 +7,7 @@ import { GroupMembersModule } from '../group-members/group-members.module';
 @Module({
   controllers: [PaymentController],
   providers: [PaymentService],
-  imports: [forwardRef(()=> GroupsModule), forwardRef(()=> GroupMembersModule)]
+  imports: [forwardRef(()=> GroupsModule), forwardRef(()=> GroupMembersModule)],
+  exports: [PaymentService]
 })
 export class PaymentModule {}
