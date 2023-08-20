@@ -1,58 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import {
-  CreateGroupMemberExpenseDto,
-  GROUP_MEMBER_EXPENSE_ROLE,
-} from './dto/create-group-member-expense.dto';
-import { UpdateGroupMemberExpenseDto } from './dto/update-group-member-expense.dto';
-import { PrismaClient } from '@prisma/client';
+import {forwardRef, HttpException, HttpStatus, Inject, Injectable} from '@nestjs/common';
+import {UpdateGroupMemberExpenseDto} from './dto/update-group-member-expense.dto';
+import {GROUP_MEMBER_EXPENSE_ROLE, PrismaClient} from '@prisma/client';
 import Big from 'big.js';
-const prisma = new PrismaClient();
+import {CurrenciesService} from "../../../../currencies/currencies.service";
+import {GroupsService} from "../../../groups.service";
+import {GroupMembersService} from "../../../group-members/group-members.service";
+import {SubExpensesService} from "../sub-expenses.service";
+import {ExpensesService} from "../../expenses.service";
+import {GroupsController} from "../../../groups.controller";
+import {GroupMemberExpenseEntity} from "./entities/group-member-expense.entity";
+import {SubExpenseMapper} from "../mapping/sub-expense.mapper";
+import {GroupMemberExpenseMapper} from "./mapping/group-member-expense.mapper";
 
-interface GroupMemberExpenseMany {
-  amount: string;
-  amountReferenceCurrency: string;
-  role: keyof typeof GROUP_MEMBER_EXPENSE_ROLE;
-  currency: string;
-  groupMemberId: string;
-  subExpenseId: string;
-}
+const prisma = new PrismaClient();
 @Injectable()
 export class GroupMemberExpensesService {
-  async create(
-    createGroupMemberExpenseDto: CreateGroupMemberExpenseDto[],
-    subExpenseId: string,
-  ) {
-    const groupMemberExpenses: GroupMemberExpenseMany[] =
-      createGroupMemberExpenseDto.map((groupMemberExpense) => ({
-        ...groupMemberExpense,
-        amount: groupMemberExpense.amount.toString(),
-        //TODO: Needs to be changed from 23
-        amountReferenceCurrency: new Big(23).toString(),
-        subExpenseId,
-      }));
+  constructor(
+      private readonly currenciesService: CurrenciesService,
+      @Inject(forwardRef(() => GroupsService)) private groupsService: GroupsService,
+      private readonly groupMemberExpenseMapper: GroupMemberExpenseMapper
+  ) {}
 
-    await prisma.groupMemberExpense.createMany({
-      data: groupMemberExpenses,
-    });
-
-    return this.findAll(subExpenseId);
-  }
-
-  findAll(subExpenseId: string) {
-    return prisma.groupMemberExpense.findMany({
+  async findAll(subExpenseId: string): Promise<GroupMemberExpenseEntity[]> {
+    const dbResult = await prisma.groupMemberExpense.findMany({
       where: {
         subExpenseId,
       },
+      include: {
+        groupMember: true
+      }
     });
+
+    return this.groupMemberExpenseMapper.groupMemberPaymentsEnhancedEntitiesFromDb(dbResult)
   }
 
-  findOne(id: string, subExpenseId: string) {
-    return prisma.groupMemberExpense.findFirst({
+  async findOne(id: string, subExpenseId: string) {
+    const result = await prisma.groupMemberExpense.findFirst({
       where: {
         id,
         subExpenseId,
       },
+      include: {
+        groupMember: true
+      }
     });
+
+    return this.groupMemberExpenseMapper.groupMemberPaymentsEnhancedEntityFromDb(result);
   }
 
   async exists(id: string, subExpenseId: string) {
@@ -66,21 +59,63 @@ export class GroupMemberExpensesService {
     );
   }
 
-  update(
-    id: string,
-    updateGroupMemberExpenseDto: UpdateGroupMemberExpenseDto,
-    subExpenseId: string,
+  async update(
+      updateGroupMemberExpenseDtos: UpdateGroupMemberExpenseDto[],
+      subExpenseId: string,
+      groupId: string,
   ) {
-    return prisma.groupMemberExpense.update({
+    let gainerSum = Big(0)
+    let sponsorSum = Big(0)
+    const currencies = []
+
+    for (let updateGroupMemberExpenseDto of updateGroupMemberExpenseDtos) {
+      if (updateGroupMemberExpenseDto.role === "GAINER") {
+        gainerSum = gainerSum.add(updateGroupMemberExpenseDto.amount)
+      }
+
+      if (updateGroupMemberExpenseDto.role === "SPONSOR") {
+        sponsorSum = sponsorSum.add(updateGroupMemberExpenseDto.amount)
+      }
+
+      if (!currencies.includes(updateGroupMemberExpenseDto.currency)) {
+        currencies.push(updateGroupMemberExpenseDto.currency)
+      }
+    }
+
+    if (!gainerSum.eq(sponsorSum)) {
+      throw new HttpException("Amounts of gains and sponsorships don't match", HttpStatus.BAD_REQUEST)
+    }
+
+    if (currencies.length > 1) {
+      throw new HttpException("Amounts must be in same currency", HttpStatus.BAD_REQUEST)
+    }
+
+    for (const currency of currencies) {
+      if (await this.currenciesService.findOneCurrency(currency, new Date()) === null) {
+        throw new HttpException("Currency not found: " + currency, HttpStatus.BAD_REQUEST)
+      }
+    }
+
+    const groupCurrency = (await this.groupsService.findOne(groupId)).currency;
+
+    await prisma.groupMemberExpense.deleteMany({
       where: {
-        id,
-        subExpenseId,
-      },
-      data: {
-        ...updateGroupMemberExpenseDto,
-        amount: updateGroupMemberExpenseDto.amount.toString(),
-      },
+        subExpenseId
+      }
+    })
+
+    const king = await Promise.all(updateGroupMemberExpenseDtos.map(async (groupMemberExpense) => ({
+      ...groupMemberExpense,
+      amount: groupMemberExpense.amount.toString(),
+      amountReferenceCurrency: (await this.currenciesService.convert(groupMemberExpense.currency, groupCurrency, groupMemberExpense.amount, groupMemberExpense.date)).toString(),
+      subExpenseId,
+    })))
+
+    await prisma.groupMemberExpense.createMany({
+      data: king
     });
+
+    return this.findAll(subExpenseId);
   }
 
   remove(id: string, subExpenseId: string) {
@@ -105,4 +140,13 @@ export class GroupMemberExpensesService {
       },
     });
   }
+}
+
+interface GroupMemberExpenseMany {
+  amount: string;
+  amountReferenceCurrency: string;
+  role: keyof typeof GROUP_MEMBER_EXPENSE_ROLE;
+  currency: string;
+  groupMemberId: string;
+  subExpenseId: string;
 }

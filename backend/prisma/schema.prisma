@@ -130,6 +130,7 @@ model GroupMemberExpense {
   currency                String
   amount                  Decimal
   role                    GROUP_MEMBER_EXPENSE_ROLE
+  date DateTime
 
   subExpense    SubExpense  @relation(fields: [subExpenseId], references: [id])
   groupMember   GroupMember @relation(fields: [groupMemberId], references: [id])

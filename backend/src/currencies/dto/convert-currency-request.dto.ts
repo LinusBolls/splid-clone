@@ -1,5 +1,6 @@
 import { IsDate, IsNumber, IsOptional, Length } from 'class-validator';
 import { Type } from 'class-transformer';
+import Big from "big.js";
 
 export class ConvertCurrencyRequestDto {
   @Length(3, 3)
@@ -7,7 +8,7 @@ export class ConvertCurrencyRequestDto {
   @Length(3, 3)
   to: string;
   @IsNumber()
-  amount: number;
+  amount: Big;
   @IsOptional()
   @Type(() => Date)
   @IsDate()

@@ -36,6 +36,10 @@ export class CurrenciesController {
       new Date(),
     );
 
+    if (currency === null) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+
     return this.currencyMapper.dtoFromEntity(currency);
   }
 

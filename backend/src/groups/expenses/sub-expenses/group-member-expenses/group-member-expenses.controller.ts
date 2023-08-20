@@ -1,24 +1,14 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { GroupMemberExpensesService } from './group-member-expenses.service';
-import { CreateGroupMemberExpenseDto } from './dto/create-group-member-expense.dto';
-import { UpdateGroupMemberExpenseDto } from './dto/update-group-member-expense.dto';
-import { GroupsService } from 'src/groups/groups.service';
-import { SubExpensesService } from '../sub-expenses.service';
-import { ExpensesService } from '../../expenses.service';
-import { GroupMembersService } from 'src/groups/group-members/group-members.service';
+import {Body, Controller, Get, HttpException, HttpStatus, Param, ParseArrayPipe, Put,} from '@nestjs/common';
+import {GroupMemberExpensesService} from './group-member-expenses.service';
+import {UpdateGroupMemberExpenseDto} from './dto/update-group-member-expense.dto';
+import {GroupsService} from 'src/groups/groups.service';
+import {SubExpensesService} from '../sub-expenses.service';
+import {ExpensesService} from '../../expenses.service';
+import {GroupMembersService} from 'src/groups/group-members/group-members.service';
+import {GroupMemberExpenseMapper} from "./mapping/group-member-expense.mapper";
 
 @Controller(
-  '/groups/:groupid/expenses/:expenseid/sub-expenses/:subexpenseid/group-member-expenses',
+  '/groups/:groupId/expenses/:expenseId/sub-expenses/:subExpenseId/group-member-expenses',
 )
 export class GroupMemberExpensesController {
   constructor(
@@ -27,45 +17,13 @@ export class GroupMemberExpensesController {
     private readonly expensesService: ExpensesService,
     private readonly groupMemberService: GroupMembersService,
     private readonly groupMemberExpensesService: GroupMemberExpensesService,
+    private readonly groupMemberExpenseMapper: GroupMemberExpenseMapper,
   ) {}
-
-  @Post()
-  async create(
-    @Param('groupid') groupId: string,
-    @Param('expenseid') expenseId: string,
-    @Param('subexpenseid') subExpenseId: string,
-    @Body()
-    createGroupMemberExpenseDto:
-      | CreateGroupMemberExpenseDto
-      | CreateGroupMemberExpenseDto[],
-  ) {
-    const groupAndExpenseErr = await this.checkIfGroupExpenseAndSubExpenseExist(
-      groupId,
-      expenseId,
-      subExpenseId,
-    );
-    if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
-
-    let groupMemberExpenses: CreateGroupMemberExpenseDto[] = [];
-    if (Array.isArray(createGroupMemberExpenseDto))
-      groupMemberExpenses = createGroupMemberExpenseDto;
-    else groupMemberExpenses.push(createGroupMemberExpenseDto);
-
-    for (const groupMember of groupMemberExpenses) {
-      if (!(await this.groupMemberService.exists(groupMember.groupMemberId)))
-        throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
-    }
-
-    return this.groupMemberExpensesService.create(
-      groupMemberExpenses,
-      subExpenseId,
-    );
-  }
 
   @Get()
   async findAll(
-    @Param('groupid') groupId: string,
-    @Param('expenseid') expenseId: string,
+    @Param('groupId') groupId: string,
+    @Param('expenseId') expenseId: string,
     @Param('subExpenseId') subExpenseId: string,
   ) {
     const groupAndExpenseErr = await this.checkIfGroupExpenseAndSubExpenseExist(
@@ -75,13 +33,15 @@ export class GroupMemberExpensesController {
     );
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
-    return this.groupMemberExpensesService.findAll(subExpenseId);
+    const result = await this.groupMemberExpensesService.findAll(subExpenseId);
+
+    return this.groupMemberExpenseMapper.dtosFromEntities(result);
   }
 
   @Get(':id')
   async findOne(
-    @Param('groupid') groupId: string,
-    @Param('expenseid') expenseId: string,
+    @Param('groupId') groupId: string,
+    @Param('expenseId') expenseId: string,
     @Param('subExpenseId') subExpenseId: string,
     @Param('id') id: string,
   ) {
@@ -103,58 +63,36 @@ export class GroupMemberExpensesController {
         HttpStatus.NOT_FOUND,
       );
 
-    return findResult;
+    return this.groupMemberExpenseMapper.dtoFromEntity(findResult);
   }
 
-  @Patch(':id')
+  @Put()
   async update(
-    @Param('groupid') groupId: string,
-    @Param('expenseid') expenseId: string,
-    @Param('subExpenseId') subExpenseId: string,
-    @Param('id') id: string,
-    @Body() updateGroupMemberExpenseDto: UpdateGroupMemberExpenseDto,
+      @Param('groupId') groupId: string,
+      @Param('expenseId') expenseId: string,
+      @Param('subExpenseId') subExpenseId: string,
+      @Body(new ParseArrayPipe({ items: UpdateGroupMemberExpenseDto }))
+          updateGroupMemberExpenseDtos: UpdateGroupMemberExpenseDto[],
   ) {
     const groupAndExpenseErr = await this.checkIfGroupExpenseAndSubExpenseExist(
-      groupId,
-      expenseId,
-      subExpenseId,
+        groupId,
+        expenseId,
+        subExpenseId,
     );
     if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
 
-    if (!(await this.groupMemberExpensesService.exists(id, subExpenseId)))
-      return new HttpException(
-        'GroupMemberExpense not found',
-        HttpStatus.NOT_FOUND,
-      );
+    for (const groupMember of updateGroupMemberExpenseDtos) {
+      if (!(await this.groupMemberService.exists(groupMember.groupMemberId)))
+        throw new HttpException('GroupMember not found', HttpStatus.NOT_FOUND);
+    }
 
-    return this.groupMemberExpensesService.update(
-      id,
-      updateGroupMemberExpenseDto,
-      subExpenseId,
+    const result = await this.groupMemberExpensesService.update(
+        updateGroupMemberExpenseDtos,
+        subExpenseId,
+        groupId
     );
-  }
 
-  @Delete(':id')
-  async remove(
-    @Param('groupid') groupId: string,
-    @Param('expenseid') expenseId: string,
-    @Param('subExpenseId') subExpenseId: string,
-    @Param('id') id: string,
-  ) {
-    const groupAndExpenseErr = await this.checkIfGroupExpenseAndSubExpenseExist(
-      groupId,
-      expenseId,
-      subExpenseId,
-    );
-    if (groupAndExpenseErr !== null) throw groupAndExpenseErr;
-
-    if (!(await this.groupMemberExpensesService.exists(id, subExpenseId)))
-      return new HttpException(
-        'GroupMemberExpense not found',
-        HttpStatus.NOT_FOUND,
-      );
-
-    return this.groupMemberExpensesService.remove(id, subExpenseId);
+    return this.groupMemberExpenseMapper.dtosFromEntities(result)
   }
 
   async checkIfGroupExpenseAndSubExpenseExist(

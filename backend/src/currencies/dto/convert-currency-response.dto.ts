@@ -1,9 +1,9 @@
-import { Decimal } from '@prisma/client/runtime/library';
+import Big from "big.js";
 
 export class ConvertCurrencyResponseDto {
   from: string;
   to: string;
-  amount: number;
+  amount: Big;
   date: String;
-  quoteAmount: Decimal;
+  quoteAmount: Big;
 }

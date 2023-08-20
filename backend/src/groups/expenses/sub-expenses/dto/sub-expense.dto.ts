@@ -1,13 +1,13 @@
+import {GroupMemberExpenseDto} from "../group-member-expenses/dto/group-member-expenses.dto";
+import Big from "big.js";
+import {Expose} from "class-transformer";
+
 export class SubExpenseDto {
-  id: string;
-  createdAt: Date;
+  @Expose() id: string
 
-  updatedAt: Date;
+  @Expose() amount: Big;
+  @Expose() currency: string;
+  @Expose() amountReferenceCurrency: Big;
 
-  priceReferenceCurrency: number;
-  price: number;
-  currency: string;
-
-  expenseId: string;
-  groupMember: GroupMemberExpenseDto[];
+  @Expose() groupMemberExpenses: GroupMemberExpenseDto[]
 }

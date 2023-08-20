@@ -1,16 +1,21 @@
-class GroupMemberExpenseDto {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+import Big from "big.js";
+import {GroupMemberDto} from "../../../../group-members/dto/group-member.dto";
+import {IsDate} from "class-validator";
+import {Expose} from "class-transformer";
 
-  amount: number;
-  role: GroupMemberRole;
+export class GroupMemberExpenseDto {
+  @Expose() id: string;
 
-  subExpenseId: string;
-  groupMemberId: string;
+  @Expose() amountReferenceCurrency: Big;
+  @Expose() currency: string
+  @Expose() amount: Big;
+  @Expose() role: keyof typeof GROUP_MEMBER_EXPENSE_ROLE;
+  @Expose() date: Date;
+
+  @Expose() groupMember: GroupMemberDto;
 }
 
-enum GroupMemberRole {
-  Sponser,
-  Gainer,
-}
+export const GROUP_MEMBER_EXPENSE_ROLE = {
+  SPONSOR: 'SPONSOR',
+  GAINER: 'GAINER',
+} as const;

@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import { CurrencyRateMapper } from './mapping/currency-rate.mapper';
 import { CurrencyMapper } from './mapping/currency.mapper';
 import { Decimal } from '@prisma/client/runtime/library';
+import Big from "big.js";
 
 const prisma = new PrismaClient();
 
@@ -37,21 +38,20 @@ export class CurrenciesService {
       },
     });
 
-    if (result === null) {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-    }
-
     return result;
   }
 
   async findAllRates(date: Date) {
     await this.populateTables(date);
 
-    return prisma.currencyRate.findMany({
+    return (await prisma.currencyRate.findMany({
       where: {
         date,
       },
-    });
+    })).map(value => ({
+      ...value,
+      rateEurBase: new Big(value.rateEurBase.toString())
+    }));
   }
 
   async findOneRate(symbol: string, date: Date) {
@@ -74,13 +74,13 @@ export class CurrenciesService {
   async convert(
     symbolBase: string,
     symbolQuote: string,
-    amount: number,
+    amount: Big,
     date: Date,
   ) {
     await this.populateTables(date);
 
     const rates = await this.findAllRates(date);
-    let eurAmount: Decimal;
+    let eurAmount: Big;
 
     if (symbolBase !== 'EUR') {
       const rateEurBased = rates.find((value) => value.symbol === symbolBase);
@@ -89,18 +89,18 @@ export class CurrenciesService {
         return null;
       }
 
-      eurAmount = Decimal.mul(amount, rateEurBased.rateEurBase);
+      eurAmount = rateEurBased.rateEurBase.times(amount);
     } else {
-      eurAmount = new Decimal(amount);
+      eurAmount = amount;
     }
 
-    let quoteAmount: Decimal;
+    let quoteAmount: Big;
 
     if (symbolQuote === 'EUR') {
       quoteAmount = eurAmount;
     } else {
       const quoteRate = rates.find((value) => value.symbol === symbolQuote);
-      quoteAmount = Decimal.div(quoteRate.rateEurBase, eurAmount);
+      quoteAmount = quoteRate.rateEurBase.div(eurAmount)
     }
 
     return quoteAmount;
