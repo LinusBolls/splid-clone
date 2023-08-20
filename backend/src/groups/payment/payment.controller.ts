@@ -16,7 +16,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { GroupsService } from '../groups.service';
 import { GroupMembersService } from '../group-members/group-members.service';
-import {PaymentMapper} from "./mapping/payment-mapper.service";
+import {PaymentMapper} from "./mapping/payment.mapper";
 
 @Controller('/groups/:groupId/payment')
 export class PaymentController {
@@ -49,7 +49,7 @@ export class PaymentController {
 
     const result = await this.paymentService.create(createPaymentDto, groupId);
 
-    this.paymentMapper.dtoFromEntity(result);
+    return this.paymentMapper.dtoFromEntity(result);
   }
 
   @Get()

@@ -11,6 +11,7 @@ export class PaymentEntity {
     @Expose() amountReferenceCurrency: Big;
     @Expose() currency: string;
     @Expose() amount: Big;
+    @Expose() date: Date;
 
     @Expose() sender: GroupMemberEntity;
     @Expose() receiver: GroupMemberEntity;

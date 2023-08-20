@@ -1,23 +1,37 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { PrismaClient } from '@prisma/client';
+import {forwardRef, Inject, Injectable} from '@nestjs/common';
+import {CreatePaymentDto} from './dto/create-payment.dto';
+import {UpdatePaymentDto} from './dto/update-payment.dto';
+import {PrismaClient} from '@prisma/client';
 import Big from 'big.js';
-import {PaymentMapper} from "./mapping/payment-mapper.service";
+import {PaymentMapper} from "./mapping/payment.mapper";
+import {CurrenciesService} from "../../currencies/currencies.service";
+import {GroupsService} from "../groups.service";
+
 const prisma = new PrismaClient();
 
 @Injectable()
 export class PaymentService {
-  constructor(private readonly paymentMapper: PaymentMapper) {
+  constructor(private readonly paymentMapper: PaymentMapper, private readonly currenciesService: CurrenciesService,
+              @Inject(forwardRef(() => GroupsService))
+              private groupsService: GroupsService) {
   }
 
   async create(createPaymentDto: CreatePaymentDto, groupId: string) {
+    const groupCurrency = (await this.groupsService.findOne(groupId)).currency;
+
     const result = await prisma.payment.create({
       data: {
         ...createPaymentDto,
         amount: createPaymentDto.amount.toString(),
         //TODO: Change the 23
-        amountReferenceCurrency: new Big(23).toString(),
+        amountReferenceCurrency: (
+            await this.currenciesService.convert(
+                createPaymentDto.currency,
+                groupCurrency,
+                createPaymentDto.amount,
+                createPaymentDto.date,
+            )
+        ).toString(),
         groupId,
       },
       include: {

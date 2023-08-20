@@ -16,13 +16,7 @@ export class PaymentMapper {
     return payments.map((payment) => this.dtoFromEntity(payment));
   }
 
-  @Mappings(
-      { target: 'amount', expression: 'Big(expense.amount)' },
-      {
-        target: 'amountReferenceCurrency',
-        expression: 'Big(expense.amountReferenceCurrency)',
-      }
-  )
+  @Mappings()
   entityFromDb(payment: Payment): PaymentEntity {
     return new PaymentEntity();
   }
@@ -31,13 +25,7 @@ export class PaymentMapper {
     return payments.map((payment) => this.entityFromDb(payment));
   }
 
-  @Mappings(
-      { target: 'amount', expression: 'Big(expense.amount)' },
-      {
-        target: 'amountReferenceCurrency',
-        expression: 'Big(expense.amountReferenceCurrency)',
-      }
-  )
+  @Mappings()
   categoryEnhancedEntityFromDb(payment: EnhancedPayment): PaymentEntity {
     return new PaymentEntity();
   }
