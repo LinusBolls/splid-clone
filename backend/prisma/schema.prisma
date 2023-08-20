@@ -23,6 +23,7 @@ model Group {
   expenses          Expense[]
   expenseCategories ExpenseCategory[]
   groupMembers      GroupMember[]
+
 }
 
 model GroupMember {
