@@ -1,13 +1,12 @@
+import { CreateExpenseCategoryDto } from '../../../../../backend/src/groups/expense-categories/dto/create-expense-category.dto';
+import { ExpenseCategoryDto } from '../../../../../backend/src/groups/expense-categories/dto/expense-category.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export interface CreateExpenseCategoryResponse {
-  id: string;
-  name: string;
-}
+export type CreateExpenseCategoryResponse = ExpenseCategoryDto;
 export async function createExpenseCategory(
   config: RequestConfig,
   groupId: string,
-  body: { name: string }
+  body: CreateExpenseCategoryDto
 ) {
   const url = config.baseUrl + '/groups/' + groupId + '/expense-categories';
 

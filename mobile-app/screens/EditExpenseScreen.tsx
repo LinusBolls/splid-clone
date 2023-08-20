@@ -58,11 +58,15 @@ export default function EditExpenseScreen({ navigation }: any) {
 
     const draft = draftStore.actions.getDraft();
 
-    const createExpenseRes = await identityStore.client!.expenses.create({
-      name: draft.title,
-      description: '',
-      currency: 'EUR',
-    });
+    const createExpenseRes = await identityStore.client!.expenses.create(
+      navigationStore.activeGroupId!,
+      {
+        name: draft.title,
+        description: '',
+        location: '',
+        categoryIds: [],
+      }
+    );
 
     const createSubexpensesRes = await Promise.all(
       draftStore.subexpenses.map((i) =>

@@ -1,9 +1,8 @@
+import { CurrencyDto } from '../../../../../backend/src/currencies/dto/currency.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export interface GetCurrencyResponse {
-  symbol: string;
-  name: string;
-}
+export type GetCurrencyResponse = CurrencyDto;
+
 export async function getCurrency(
   config: RequestConfig,
   currencySymbol: string

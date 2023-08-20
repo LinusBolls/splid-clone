@@ -1,12 +1,7 @@
+import { GroupDto } from '../../../../../backend/src/groups/dto/group.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export interface GetGroupResponse {
-  id: string;
-  name: string;
-  description: string;
-  inviteCode: string;
-  currency: string; // e.g. "EUR" | "USD"
-}
+export type GetGroupResponse = GroupDto;
 export async function getGroup(config: RequestConfig, groupId: string) {
   const url = config.baseUrl + '/groups/' + groupId;
 

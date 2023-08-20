@@ -1,23 +1,13 @@
+import { CreateGroupMemberDto } from '../../../../../backend/src/groups/group-members/dto/create-group-member.dto';
+import { GroupMemberDto } from '../../../../../backend/src/groups/group-members/dto/group-member.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export interface CreateGroupMemberResponse {
-  id: string;
-  name: string;
-  status: string | null;
-  paymentDetails: {
-    id: string;
-    name: null;
-    type: 'PAYPAL';
-    detail: {
-      userName: string;
-    };
-  }[];
-}
+export type CreateGroupMemberResponse = GroupMemberDto;
 
 export async function createGroupMember(
   config: RequestConfig,
   groupId: string,
-  body: { name: string }
+  body: CreateGroupMemberDto
 ) {
   const url = config.baseUrl + '/groups/' + groupId + '/group-members';
 

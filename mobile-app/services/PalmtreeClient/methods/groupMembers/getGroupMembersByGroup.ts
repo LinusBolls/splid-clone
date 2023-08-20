@@ -1,18 +1,7 @@
+import { GroupMemberDto } from '../../../../../backend/src/groups/group-members/dto/group-member.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export type GetGroupMembersByGroupResponse = {
-  id: string;
-  name: string;
-  status: string | null;
-  paymentDetails: {
-    id: string;
-    name: null;
-    type: 'PAYPAL';
-    detail: {
-      userName: string;
-    };
-  }[];
-}[];
+export type GetGroupMembersByGroupResponse = GroupMemberDto[];
 
 export async function getGroupMembersByGroup(
   config: RequestConfig,

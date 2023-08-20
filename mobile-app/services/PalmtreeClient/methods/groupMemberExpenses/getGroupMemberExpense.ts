@@ -1,15 +1,14 @@
 import { GroupMemberExpenseDto } from '../../../../../backend/src/groups/expenses/sub-expenses/group-member-expenses/dto/group-member-expenses.dto';
-import { UpdateGroupMemberExpenseDto } from '../../../../../backend/src/groups/expenses/sub-expenses/group-member-expenses/dto/update-group-member-expense.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export type UpdateGroupMemberExpensesResponse = GroupMemberExpenseDto[];
+export type GetGroupMemberExpenseResponse = GroupMemberExpenseDto;
 
-export async function updateGroupMemberExpenses(
+export async function getGroupMemberExpense(
   config: RequestConfig,
   groupId: string,
   expenseId: string,
   subexpenseId: string,
-  body: UpdateGroupMemberExpenseDto[]
+  groupMemberExpenseId: string
 ) {
   const url =
     config.baseUrl +
@@ -19,11 +18,11 @@ export async function updateGroupMemberExpenses(
     expenseId +
     '/sub-expenses/' +
     subexpenseId +
-    '/group-member-expenses';
+    '/group-member-expenses/' +
+    groupMemberExpenseId;
 
-  const res = await config.httpClient.post<UpdateGroupMemberExpensesResponse>(
+  const res = await config.httpClient.get<GetGroupMemberExpenseResponse>(
     url,
-    body,
     config.getHeaders()
   );
   const data = res.data;

@@ -1,18 +1,13 @@
+import { CreateExpenseDto } from '../../../../../backend/src/groups/expenses/dto/create-expense.dto';
+import { ExpenseDto } from '../../../../../backend/src/groups/expenses/dto/expense.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export interface CreateExpenseResponse {
-  id: string;
-  name: string;
-}
+export type CreateExpenseResponse = ExpenseDto;
+
 export async function createExpense(
   config: RequestConfig,
   groupId: string,
-  body: {
-    name: 'dangs';
-    description: 'dongs';
-    location: 'dongs';
-    categoryIds: string[];
-  }
+  body: CreateExpenseDto
 ) {
   const url = config.baseUrl + '/groups/' + groupId + '/expenses';
 

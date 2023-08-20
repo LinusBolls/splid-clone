@@ -1,12 +1,8 @@
+import { GroupDto } from '../../../../../backend/src/groups/dto/group.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export type GetGroupsByInviteCodeResponse = {
-  id: string;
-  name: string;
-  description: string;
-  inviteCode: string;
-  currency: string; // e.g. "EUR" | "USD"
-}[];
+export type GetGroupsByInviteCodeResponse = GroupDto[];
+
 export async function getGroupsByInviteCode(
   config: RequestConfig,
   inviteCode: string

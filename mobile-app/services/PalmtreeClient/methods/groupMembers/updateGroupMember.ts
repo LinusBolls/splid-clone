@@ -1,26 +1,13 @@
+import { GroupMemberDto } from '../../../../../backend/src/groups/group-members/dto/group-member.dto';
+import { UpdateGroupMemberDto } from '../../../../../backend/src/groups/group-members/dto/update-group-member.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export interface UpdateGroupMemberResponse {
-  id: string;
-  name: string;
-  status: string | null;
-  paymentDetails: {
-    id: string;
-    name: null;
-    type: 'PAYPAL';
-    detail: {
-      userName: string;
-    };
-  }[];
-}
+export type UpdateGroupMemberResponse = GroupMemberDto;
 export async function updateGroupMember(
   config: RequestConfig,
   groupId: string,
   memberId: string,
-  body: {
-    name: string;
-    status: string | null;
-  }
+  body: UpdateGroupMemberDto
 ) {
   const url =
     config.baseUrl + '/groups/' + groupId + '/group-members/' + memberId;

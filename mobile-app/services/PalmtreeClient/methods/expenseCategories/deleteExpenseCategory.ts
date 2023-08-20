@@ -1,5 +1,6 @@
 import { RequestConfig } from '../../requestConfig';
 
+export type DeleteExpenseCategoryResponse = void;
 export async function deleteExpenseCategory(
   config: RequestConfig,
   groupId: string,
@@ -8,7 +9,10 @@ export async function deleteExpenseCategory(
   const url =
     config.baseUrl + '/groups/' + groupId + '/expense-categories/' + categoryId;
 
-  const res = await config.httpClient.delete<void>(url, config.getHeaders());
+  const res = await config.httpClient.delete<DeleteExpenseCategoryResponse>(
+    url,
+    config.getHeaders()
+  );
   const data = res.data;
 
   return data;

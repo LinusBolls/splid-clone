@@ -1,9 +1,8 @@
+import { CurrencyDto } from '../../../../../backend/src/currencies/dto/currency.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export interface GetCurrenciesResponse {
-  symbol: string;
-  name: string;
-}
+export type GetCurrenciesResponse = CurrencyDto[];
+
 export async function getCurrencies(config: RequestConfig) {
   const url = config.baseUrl + '/currencies';
 

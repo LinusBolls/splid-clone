@@ -1,15 +1,7 @@
+import { ExpenseDto } from '../../../../../backend/src/groups/expenses/dto/expense.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export type GetExpensesByGroupResponse = {
-  id: string;
-  name: String;
-  description: string;
-  location: string;
-
-  assets: {}[];
-  categories: {}[];
-  subExpenses: {}[];
-}[];
+export type GetExpensesByGroupResponse = ExpenseDto[];
 
 export async function getExpensesByGroup(
   config: RequestConfig,

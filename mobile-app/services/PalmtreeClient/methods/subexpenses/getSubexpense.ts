@@ -1,14 +1,13 @@
-import { CreateSubExpenseDto } from '../../../../../backend/src/groups/expenses/sub-expenses/dto/create-sub-expense.dto';
 import { SubExpenseDto } from '../../../../../backend/src/groups/expenses/sub-expenses/dto/sub-expense.dto';
 import { RequestConfig } from '../../requestConfig';
 
-export type CreateSubexpensesResponse = SubExpenseDto[];
+export type GetSubexpenseResponse = SubExpenseDto;
 
-export async function createSubexpenses(
+export async function getSubexpense(
   config: RequestConfig,
   groupId: string,
   expenseId: string,
-  body: CreateSubExpenseDto[]
+  subsxpenseId: string
 ) {
   const url =
     config.baseUrl +
@@ -16,11 +15,11 @@ export async function createSubexpenses(
     groupId +
     '/expenses/' +
     expenseId +
-    '/sub-expenses';
+    '/sub-expenses/' +
+    subsxpenseId;
 
-  const res = await config.httpClient.post<CreateSubexpensesResponse>(
+  const res = await config.httpClient.get<GetSubexpenseResponse>(
     url,
-    body,
     config.getHeaders()
   );
   const data = res.data;
