@@ -3,12 +3,16 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PrismaClient } from '@prisma/client';
 import Big from 'big.js';
+import {PaymentMapper} from "./mapping/payment-mapper.service";
 const prisma = new PrismaClient();
 
 @Injectable()
 export class PaymentService {
-  create(createPaymentDto: CreatePaymentDto, groupId: string) {
-    return prisma.payment.create({
+  constructor(private readonly paymentMapper: PaymentMapper) {
+  }
+
+  async create(createPaymentDto: CreatePaymentDto, groupId: string) {
+    const result = await prisma.payment.create({
       data: {
         ...createPaymentDto,
         amount: createPaymentDto.amount.toString(),
@@ -16,42 +20,77 @@ export class PaymentService {
         amountReferenceCurrency: new Big(23).toString(),
         groupId,
       },
+      include: {
+        sender: true,
+        receiver: true,
+        group: true
+      }
     });
+
+    return this.paymentMapper.categoryEnhancedEntityFromDb(result);
   }
 
-  findAllFromReceiver(groupId: string, receiverId: string) {
-    return prisma.payment.findMany({
+  async findAllFromReceiver(groupId: string, receiverId: string) {
+    const result = await prisma.payment.findMany({
       where: {
         groupId,
         receiverId,
       },
+      include: {
+        sender: true,
+        receiver: true,
+        group: true
+      }
     });
+
+    return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
   }
 
-  findAllFromSender(groupId: string, senderId: string) {
-    return prisma.payment.findMany({
+  async findAllFromSender(groupId: string, senderId: string) {
+    const result = await prisma.payment.findMany({
       where: {
         groupId,
         senderId,
       },
+      include: {
+        sender: true,
+        receiver: true,
+        group: true
+      }
     });
+
+    return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
   }
 
-  findAll(groupId: string) {
-    return prisma.payment.findMany({
+  async findAll(groupId: string) {
+    const result = await prisma.payment.findMany({
       where: {
         groupId,
       },
+      include: {
+        sender: true,
+        receiver: true,
+        group: true
+      }
     });
+
+    return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
   }
 
-  findOne(id: string, groupId: string) {
-    return prisma.payment.findFirst({
+  async findOne(id: string, groupId: string) {
+    const result = await prisma.payment.findFirst({
       where: {
         id,
         groupId,
       },
+      include: {
+        sender: true,
+        receiver: true,
+        group: true
+      }
     });
+
+    return this.paymentMapper.categoryEnhancedEntityFromDb(result);
   }
 
   async groupMemberHasPayment(groupMemberId: string) {
@@ -82,8 +121,8 @@ export class PaymentService {
     );
   }
 
-  update(id: string, updatePaymentDto: UpdatePaymentDto, groupId: string) {
-    return prisma.payment.update({
+  async update(id: string, updatePaymentDto: UpdatePaymentDto, groupId: string) {
+    const result = await prisma.payment.update({
       where: {
         id,
         groupId,
@@ -94,7 +133,14 @@ export class PaymentService {
         //TODO: Change the 23
         amountReferenceCurrency: new Big(23).toString(),
       },
+      include: {
+        sender: true,
+        receiver: true,
+        group: true
+      }
     });
+
+    return this.paymentMapper.categoryEnhancedEntityFromDb(result);
   }
 
   remove(id: string, groupId: string) {

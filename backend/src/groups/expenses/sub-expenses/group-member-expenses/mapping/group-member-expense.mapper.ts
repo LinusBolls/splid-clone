@@ -33,7 +33,13 @@ export class GroupMemberExpenseMapper {
     return expenses.map((expense) => this.entityFromDb(expense));
   }
 
-  @Mappings()
+  @Mappings(
+      { target: 'amount', expression: 'Big(expense.amount)' },
+      {
+        target: 'amountReferenceCurrency',
+        expression: 'Big(expense.amountReferenceCurrency)',
+      },
+  )
   groupMemberPaymentsEnhancedEntityFromDb(
     expense: GroupMemberExpenseWithGroupMember,
   ): GroupMemberExpenseEntity {
