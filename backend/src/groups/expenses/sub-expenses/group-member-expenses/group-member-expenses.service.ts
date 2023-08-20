@@ -1,17 +1,11 @@
-import {
-  forwardRef,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
-import { UpdateGroupMemberExpenseDto } from './dto/update-group-member-expense.dto';
-import { GROUP_MEMBER_EXPENSE_ROLE, PrismaClient } from '@prisma/client';
+import {forwardRef, HttpException, HttpStatus, Inject, Injectable,} from '@nestjs/common';
+import {UpdateGroupMemberExpenseDto} from './dto/update-group-member-expense.dto';
+import {PrismaClient} from '@prisma/client';
 import Big from 'big.js';
-import { CurrenciesService } from '../../../../currencies/currencies.service';
-import { GroupsService } from '../../../groups.service';
-import { GroupMemberExpenseEntity } from './entities/group-member-expense.entity';
-import { GroupMemberExpenseMapper } from './mapping/group-member-expense.mapper';
+import {CurrenciesService} from '../../../../currencies/currencies.service';
+import {GroupsService} from '../../../groups.service';
+import {GroupMemberExpenseEntity} from './entities/group-member-expense.entity';
+import {GroupMemberExpenseMapper} from './mapping/group-member-expense.mapper';
 
 const prisma = new PrismaClient();
 @Injectable()
@@ -80,17 +74,17 @@ export class GroupMemberExpensesService {
     subExpenseId: string,
     groupId: string,
   ) {
-    let gainerSum = Big(0);
-    let sponsorSum = Big(0);
+    let gainerSum: Big
+    let sponsorSum: Big
     const currencies = [];
 
     for (let updateGroupMemberExpenseDto of updateGroupMemberExpenseDtos) {
       if (updateGroupMemberExpenseDto.role === 'GAINER') {
-        gainerSum = gainerSum.add(updateGroupMemberExpenseDto.amount);
+        gainerSum = updateGroupMemberExpenseDto.amount.add(gainerSum  || 0);
       }
 
       if (updateGroupMemberExpenseDto.role === 'SPONSOR') {
-        sponsorSum = sponsorSum.add(updateGroupMemberExpenseDto.amount);
+        sponsorSum = updateGroupMemberExpenseDto.amount.add(sponsorSum || 0)
       }
 
       if (!currencies.includes(updateGroupMemberExpenseDto.currency)) {
@@ -98,7 +92,7 @@ export class GroupMemberExpensesService {
       }
     }
 
-    if (!gainerSum.eq(sponsorSum)) {
+    if (gainerSum === undefined || !gainerSum.eq(sponsorSum)) {
       throw new HttpException(
         "Amounts of gains and sponsorships don't match",
         HttpStatus.BAD_REQUEST,

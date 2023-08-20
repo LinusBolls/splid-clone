@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { CreateExpenseDto } from './dto/create-expense.dto';
-import { UpdateExpenseDto } from './dto/update-expense.dto';
-import { PrismaClient } from '@prisma/client';
-import { ExpenseMapper } from './mapping/expense.mapper';
-import { SubExpensesService } from './sub-expenses/sub-expenses.service';
+import {Injectable} from '@nestjs/common';
+import {CreateExpenseDto} from './dto/create-expense.dto';
+import {UpdateExpenseDto} from './dto/update-expense.dto';
+import {PrismaClient} from '@prisma/client';
+import {ExpenseMapper} from './mapping/expense.mapper';
+import {SubExpensesService} from './sub-expenses/sub-expenses.service';
+import Big from "big.js";
+import {GroupMemberExpensesService} from "./sub-expenses/group-member-expenses/group-member-expenses.service";
+import {ExpenseEntity} from "./entities/expense.entity";
 
 const prisma = new PrismaClient();
 
@@ -12,6 +15,7 @@ export class ExpensesService {
   constructor(
     private readonly subExpensesService: SubExpensesService,
     private readonly expenseMapper: ExpenseMapper,
+    private readonly groupMemberExpensesService: GroupMemberExpensesService,
   ) {}
 
   async create(createExpenseDto: CreateExpenseDto, groupId: string) {
@@ -45,7 +49,12 @@ export class ExpensesService {
       },
     });
 
-    return this.expenseMapper.categoryEnhancedEntitiesFromDb(dbResult);
+    const result = this.expenseMapper.categoryEnhancedEntitiesFromDb(dbResult);
+
+    return Promise.all(result.map(async value => ({
+      ...await this.includeAmount(value),
+      ...result
+    })));
   }
 
   async findOne(id: string, groupId: string) {
@@ -63,7 +72,12 @@ export class ExpensesService {
       },
     });
 
-    return this.expenseMapper.categoryEnhancedEntityFromDb(dbResult);
+    const result = this.expenseMapper.categoryEnhancedEntityFromDb(dbResult);
+
+    return {
+      ...await this.includeAmount(result),
+      ...result
+    };
   }
 
   async exists(id: string, groupId: string) {
@@ -159,5 +173,53 @@ export class ExpensesService {
         expenseId,
       },
     });
+  }
+
+  private async includeAmount(
+      expense: ExpenseEntity,
+  ): Promise<ExpenseEntity> {
+    const subExpenses = await this.subExpensesService.findAll(expense.id);
+
+    let amount: Big;
+    let amountReferenceCurrency: Big;
+    let currency: string;
+
+    for (let subExpense of subExpenses) {
+      const memberExpenses = await this.groupMemberExpensesService.findAll(
+          subExpense.id,
+      );
+
+      memberExpenses.forEach((value) => {
+        if (value.role === 'SPONSOR') {
+          amount = value.amount.add(amount || 0);
+          amountReferenceCurrency = value.amountReferenceCurrency.add(
+              amountReferenceCurrency || 0,
+          );
+          currency = value.currency;
+        }
+      });
+    }
+
+    return {
+      ...expense,
+      amount,
+      amountReferenceCurrency,
+      currency,
+      subExpenses,
+      categories: undefined
+    };
+  }
+
+  private async includeAmountBulk(
+      expenses: ExpenseEntity[],
+  ): Promise<ExpenseEntity[]> {
+    const list: ExpenseEntity[] = [];
+
+    for (const subExpense of expenses) {
+      const completedExpense = await this.includeAmount(subExpense);
+      list.push(completedExpense);
+    }
+
+    return list;
   }
 }

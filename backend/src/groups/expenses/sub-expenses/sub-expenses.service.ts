@@ -43,13 +43,15 @@ export class SubExpensesService {
     return this.includeAmountBulk(result);
   }
 
-  findOne(id: string, expenseId: string) {
-    return prisma.subExpense.findFirst({
+  async findOne(id: string, expenseId: string) {
+    const result = await prisma.subExpense.findFirst({
       where: {
         expenseId,
         id,
       },
     });
+
+    return this.includeAmount(result);
   }
 
   async exists(id: string, expenseId: string) {
@@ -63,12 +65,12 @@ export class SubExpensesService {
     );
   }
 
-  update(
-    id: string,
-    updateSubExpenseDto: UpdateSubExpenseDto,
-    expenseId: string,
+  async update(
+      id: string,
+      updateSubExpenseDto: UpdateSubExpenseDto,
+      expenseId: string,
   ) {
-    return prisma.subExpense.update({
+    const result = await prisma.subExpense.update({
       where: {
         expenseId,
         id,
@@ -77,6 +79,8 @@ export class SubExpensesService {
         ...updateSubExpenseDto,
       },
     });
+
+    return this.includeAmount(result);
   }
 
   async remove(id: string, expenseId: string) {
