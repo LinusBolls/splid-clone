@@ -6,8 +6,11 @@ import { createExpenseCategory } from './methods/expenseCategories/createExpense
 import { deleteExpenseCategory } from './methods/expenseCategories/deleteExpenseCategory';
 import { getExpenseCategoriesByGroup } from './methods/expenseCategories/getExpenseCategoriesByGroup';
 import { getExpenseCategory } from './methods/expenseCategories/getExpenseCategory';
+import { createExpense } from './methods/expenses/createExpense';
+import { deleteExpense } from './methods/expenses/deleteExpense';
 import { getExpense } from './methods/expenses/getExpense';
 import { getExpensesByGroup } from './methods/expenses/getExpensesByGroup';
+import { updateExpense } from './methods/expenses/updateExpense';
 import { createGroupMember } from './methods/groupMembers/createGroupMember';
 import { deleteGroupMember } from './methods/groupMembers/deleteGroupMember';
 import { getGroupMember } from './methods/groupMembers/getGroupMember';
@@ -46,8 +49,11 @@ export default class PalmtreeClient {
     };
   }
   expenses = {
+    create: this.injectRequestConfig(createExpense),
+    delete: this.injectRequestConfig(deleteExpense),
     get: this.injectRequestConfig(getExpense),
     getByGroup: this.injectRequestConfig(getExpensesByGroup),
+    update: this.injectRequestConfig(updateExpense),
   };
   groups = {
     create: this.injectRequestConfig(createGroup),

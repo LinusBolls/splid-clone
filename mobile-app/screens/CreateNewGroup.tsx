@@ -6,6 +6,7 @@ import { View } from '../components/Themed';
 import useGroupDraftStore from '../stores/groupDraftStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
+import { useIdentity } from '../stores/identityStore';
 import { useNavigation } from '../stores/navigationStore';
 
 export default function CreateNewGroup({ navigation }: any) {
@@ -30,11 +31,26 @@ export default function CreateNewGroup({ navigation }: any) {
       alert(`Don't know how to open this URL: ${url}`);
     }
   }
+  const identityStore = useIdentity();
 
-  function onCreate() {
+  async function onCreate() {
     // TODO: validate title, that all members have names, that there are > 0 group members
 
     const draft = groupDraftStore.actions.getDraft();
+
+    const createGroupRes = await identityStore.client!.groups.create({
+      name: draft.title,
+      description: '',
+      currency: 'EUR',
+    });
+
+    const createMembersRes = await Promise.all(
+      groupDraftStore.groupMembers.map((i) =>
+        identityStore.client!.groupMembers.create(createGroupRes.id, {
+          name: i.displayName,
+        })
+      )
+    );
 
     const newGroup = groupStore.actions.createGroup(draft);
 

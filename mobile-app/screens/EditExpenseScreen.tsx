@@ -10,6 +10,7 @@ import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
 import { useExpenseDraftStore } from '../stores/expenseDraftStore';
 import { useExpensesStore } from '../stores/expensesStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
+import { useIdentityStore } from '../stores/identityStore';
 import { useNavigation } from '../stores/navigationStore';
 
 export default function EditExpenseScreen({ navigation }: any) {
@@ -44,6 +45,7 @@ export default function EditExpenseScreen({ navigation }: any) {
     (sum, i) => sum + i.price,
     0
   );
+  const identityStore = useIdentityStore();
 
   useEffect(() => {
     if (titleInputRef.current) {
@@ -51,10 +53,24 @@ export default function EditExpenseScreen({ navigation }: any) {
     }
   }, []);
 
-  function onCreate() {
+  async function onCreate() {
     // TODO: validate
 
     const draft = draftStore.actions.getDraft();
+
+    const createExpenseRes = await identityStore.client!.expenses.create({
+      name: draft.title,
+      description: '',
+      currency: 'EUR',
+    });
+
+    const createSubexpensesRes = await Promise.all(
+      draftStore.subexpenses.map((i) =>
+        identityStore.client!.subexpenses.create(createExpenseRes.id, {
+          name: i.title,
+        })
+      )
+    );
 
     expensesStore.actions.createSubexpenses(
       draftStore.actions.getSubexpenseDrafts()
