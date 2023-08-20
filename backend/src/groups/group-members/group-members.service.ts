@@ -29,7 +29,7 @@ export class GroupMembersService {
       },
     });
 
-    return this.includePaymentDetail(result);
+    return this.includePaymentDetailAndBalance(result);
   }
 
   async findAll(groupId: string) {
@@ -39,7 +39,7 @@ export class GroupMembersService {
       },
     });
 
-    return this.includePaymentDetails(result);
+    return this.includePaymentDetailAndBalanceBulk(result);
   }
 
   async findOne(id: string) {
@@ -49,7 +49,7 @@ export class GroupMembersService {
       },
     });
 
-    return this.includePaymentDetail(result);
+    return this.includePaymentDetailAndBalance(result);
   }
 
   async exists(id: string) {
@@ -72,7 +72,7 @@ export class GroupMembersService {
       },
     });
 
-    return this.includePaymentDetail(result);
+    return this.includePaymentDetailAndBalance(result);
   }
 
   async remove(id: string) {
@@ -99,33 +99,31 @@ export class GroupMembersService {
     });
   }
 
-  private async includePaymentDetail(
+  private async includePaymentDetailAndBalance(
     member: GroupMember,
   ): Promise<GroupMemberEntity> {
+    const balance = (await this.calculateGroupMemberBalance(member.id))
     return {
       ...member,
+      balance,
       paymentDetails: this.paymentDetailMapper.entitiesFromDb(
         await this.paymentDetailsService.findAll(member.id),
       ),
-    };
+    }
   }
 
-  private async includePaymentDetails(
+  private async includePaymentDetailAndBalanceBulk(
     members: GroupMember[],
   ): Promise<GroupMemberEntity[]> {
     const list: GroupMemberEntity[] = [];
 
     for (const member of members) {
-      const completedMember = await this.includePaymentDetail(member);
+      const completedMember = await this.includePaymentDetailAndBalance(member);
       list.push(completedMember);
     }
 
     return list;
   }
-
-  private async includeAmount() {}
-
-  private async includeAmountBulk() {}
 
   private async calculateGroupMemberBalance(groupMemberId: string) {
     const allExpenses =
@@ -136,21 +134,24 @@ export class GroupMembersService {
     const allPayments =
       await this.paymentService.findAllPaymentsByGroupMemberId(groupMemberId);
 
-    let amount: Big;
+    let amount: Big = new Big(0);
 
     for (const expense of allExpenses) {
       if (expense.role === 'SPONSOR') {
-        amount = expense.amount.add(amount || 0);
+        amount = amount.add(expense.amount || 0);
       } else if (expense.role === 'GAINER') {
-        amount = expense.amount.sub(amount || 0);
+        amount = amount.sub(expense.amount || 0);
       }
     }
-    //for (const payment of allPayments){
-    //  if (payment.senderId === groupMemberId) {
-    //    amount = payment.amount.add(amount || 0)
-    //  } else if (payment.receiverId === groupMemberId) {
-    //    amoun = payment.amount.sub(amount || 0)
-    //  }
-    //}
+
+    for (const payment of allPayments){
+      if (payment.sender.id === groupMemberId) {
+        amount = amount.add(payment.amount || 0) 
+      } else if (payment.receiver.id === groupMemberId) {
+        amount = amount.sub(payment.amount || 0)
+      }
+    }
+    
+    return amount;
   }
 }

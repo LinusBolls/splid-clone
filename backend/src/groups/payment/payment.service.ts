@@ -76,8 +76,8 @@ export class PaymentService {
     return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
   }
 
-  findAllPaymentsByGroupMemberId(groupMemberId: string) {
-    return prisma.payment.findMany({
+  async findAllPaymentsByGroupMemberId(groupMemberId: string) {
+    const result = await prisma.payment.findMany({
       where: {
         OR: [
           {
@@ -88,7 +88,15 @@ export class PaymentService {
           },
         ],
       },
+      include: {
+        sender: true,
+        receiver: true,
+        group: true
+      }
     });
+    
+
+    return this.paymentMapper.categoryEnhancedEntitiesFromDb(result);
   }
 
   async findAll(groupId: string) {
