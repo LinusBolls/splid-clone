@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import Swiper from 'react-native-swiper';
 
 import ModalDragHandle from '../components/ModalDragHandle';
@@ -29,9 +30,13 @@ export default function EditExpenseModal({ navigation }: any) {
     navigationStore.actions.setActiveSubexpenseId(activeSubexpenses[0]?.id);
   }
   function onSwiped(expenseIdx: number) {
-    navigationStore.actions.setActiveSubexpenseId(
-      activeSubexpenses[expenseIdx].id
-    );
+    const selectedExpense = activeSubexpenses[expenseIdx];
+
+    if (selectedExpense) {
+      navigationStore.actions.setActiveSubexpenseId(selectedExpense.id);
+    } else {
+      console.warn('onSwiped:', expenseIdx);
+    }
   }
   const membersStore = useGroupMembersStore();
 
@@ -101,7 +106,7 @@ export default function EditExpenseModal({ navigation }: any) {
             const share = i.shares.find((s) => s.memberId === m.id);
 
             return {
-              title: m.displayName || 'Unknown',
+              title: m.name || 'Unknown',
               value: m.id,
               isActive: share != null,
               icon: (
@@ -160,16 +165,10 @@ export default function EditExpenseModal({ navigation }: any) {
                 expensesDraftStore.actions.setSubexpenseTitle(i.id, value)
               }
               onGainerSelected={(gainer) =>
-                expensesDraftStore.actions.addSubexpenseShare(
-                  i.id,
-                  gainer.value
-                )
+                expensesDraftStore.actions.addGainerShare(i.id, gainer.value)
               }
               onGainerUnselected={(gainer) =>
-                expensesDraftStore.actions.removeSubexpenseShare(
-                  i.id,
-                  gainer.value
-                )
+                expensesDraftStore.actions.removeGainerShare(i.id, gainer.value)
               }
             />
           );

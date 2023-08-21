@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Button, Linking, Pressable, Text, TextInput } from 'react-native';
+import { Linking, Pressable, Text, TextInput } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import { View } from '../components/Themed';
+import useCreateGroup from '../fetching/useCreateGroup';
 import useGroupDraftStore from '../stores/groupDraftStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
@@ -15,8 +16,6 @@ export default function CreateNewGroup({ navigation }: any) {
   const navigationStore = useNavigation();
 
   const groupDraftStore = useGroupDraftStore();
-
-  const groupMembersStore = useGroupMembersStore();
 
   async function openPaypal() {
     const url = `https://www.paypal.com/paypalme/LinusBolls/420.69EUR`;
@@ -31,38 +30,26 @@ export default function CreateNewGroup({ navigation }: any) {
       alert(`Don't know how to open this URL: ${url}`);
     }
   }
-  const identityStore = useIdentity();
+  const createGroupMutation = useCreateGroup();
 
   async function onCreate() {
     // TODO: validate title, that all members have names, that there are > 0 group members
 
     const draft = groupDraftStore.actions.getDraft();
 
-    const createGroupRes = await identityStore.client!.groups.create({
-      name: draft.title,
-      description: '',
-      currency: 'EUR',
+    const { group } = await createGroupMutation.mutateAsync({
+      group: {
+        name: draft.title,
+        description: '',
+        currency: 'EUR',
+      },
+      members: groupDraftStore.groupMembers,
     });
+    navigationStore.actions.setActiveGroupId(group.id);
 
-    const createMembersRes = await Promise.all(
-      groupDraftStore.groupMembers.map((i) =>
-        identityStore.client!.groupMembers.create(createGroupRes.id, {
-          name: i.displayName,
-        })
-      )
-    );
-
-    const newGroup = groupStore.actions.createGroup(draft);
-
-    navigationStore.actions.setActiveGroupId(newGroup.id);
-
-    groupMembersStore.actions.createMembers(
-      newGroup.id,
-      groupDraftStore.groupMembers
-    );
     groupDraftStore.actions.clear();
 
-    navigation.goBack();
+    navigation.navigate('Root');
   }
   function onCancel() {
     navigation.goBack();
@@ -322,7 +309,12 @@ export default function CreateNewGroup({ navigation }: any) {
               color: 'white',
             }}
           >
-            Save
+            {(() => {
+              if (createGroupMutation.isError) return 'Error';
+              if (createGroupMutation.isLoading) return '...';
+
+              return 'Save';
+            })()}
           </Text>
         </Pressable>
       </View>

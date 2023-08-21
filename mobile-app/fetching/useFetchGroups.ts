@@ -7,14 +7,14 @@ import QueryKeys from './QueryKey';
 
 export default function useFetchGroups() {
   const { isLoading, client } = useIdentity();
-  const { setGroups } = useGroupsStore();
+  const groupsStore = useGroupsStore();
 
   const fetchGroups = async () => {
     if (!client) {
       return null;
     }
     const res = await Promise.all(
-      groups.map((group) => client.expenses.getByGroup(group.id))
+      groupsStore.groups.map((group) => client.groups.get(group.id))
     );
     const data = res.flat().filter(Boolean);
 
@@ -22,21 +22,21 @@ export default function useFetchGroups() {
   };
 
   const {
-    data: expenses,
-    isLoading: isLoadingExpenses,
-    isError: hasExpensesError,
-  } = useQuery(QueryKeys.EXPENSE, fetchGroups, {
-    enabled: !!client && groups.length > 0,
+    data: groups,
+    isLoading: isLoadingGroups,
+    isError: hasGroupsError,
+  } = useQuery(QueryKeys.GROUP, fetchGroups, {
+    enabled: !!client,
   });
 
   useEffect(() => {
-    if (expenses) {
-      setExpenses(expenses);
+    if (groups) {
+      groupsStore.actions.setGroups(groups);
     }
-  }, [expenses, setExpenses]);
+  }, [groups, groupsStore.actions.setGroups]);
 
   return {
-    isLoadingExpenses: isLoading || isLoadingExpenses,
-    hasExpensesError,
+    isLoadingGroups: isLoading || isLoadingGroups,
+    hasGroupsError: hasGroupsError,
   };
 }

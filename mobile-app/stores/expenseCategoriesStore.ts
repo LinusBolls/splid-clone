@@ -1,53 +1,44 @@
-import uuid from 'react-native-uuid';
 import { create } from 'zustand';
 
+import { ExpenseCategoryDto } from '../../backend/src/groups/expense-categories/dto/expense-category.dto';
 import { persist } from './persist';
 import StorageKey from './StorageKey';
 
-export interface ExpenseCategory {
-  id: string;
-  groupId: string;
-
-  displayName: string;
-}
 export interface ExpenseCategoriesStore {
-  categories: ExpenseCategory[];
+  categories: ExpenseCategoryDto[];
 
   actions: {
-    createCategory: (
-      groupId: string,
-      category: Omit<ExpenseCategory, 'id' | 'groupId'>
-    ) => ExpenseCategory;
-    deleteCategory: (groupId: string, categoryId: string) => void;
+    addCategory: (category: ExpenseCategoryDto) => ExpenseCategoryDto;
+    addCategories: (categories: ExpenseCategoryDto[]) => ExpenseCategoryDto[];
+    setCategories: (categories: ExpenseCategoryDto[]) => ExpenseCategoryDto[];
+    removeCategory: (groupId: string, categoryId: string) => void;
   };
 }
 export const useExpenseCategoriesStore = create<ExpenseCategoriesStore>(
   persist(StorageKey.EXPENSE_CATEGORY, (set) => ({
-    categories: [
-      {
-        id: 'expense-category:default:restaurant',
-        displayName: 'Restaurant',
-        groupId: '',
-      },
-    ],
+    categories: [],
 
     actions: {
-      createCategory: (groupId, category) => {
-        const newCategory = {
-          id: uuid.v4() as string,
-          displayName: category.displayName,
-          groupId,
-        };
+      addCategory: (category) => {
         set((store) => ({
-          ...store,
-          categories: [...store.categories, newCategory],
+          categories: store.categories.concat([category]),
         }));
-
-        return newCategory;
+        return category;
       },
-      deleteCategory: (categoryId) => {
+      addCategories: (categories) => {
         set((store) => ({
-          ...store,
+          categories: store.categories.concat(categories),
+        }));
+        return categories;
+      },
+      setCategories: (categories) => {
+        set((store) => ({
+          categories,
+        }));
+        return categories;
+      },
+      removeCategory: (categoryId) => {
+        set((store) => ({
           categories: store.categories.filter((i) => i.id !== categoryId),
         }));
       },

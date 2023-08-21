@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "CODE Connect",
+    "name": "Palmtree",
     "slug": "codeconnect",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/codeConnectSplashScreen.png",
       "resizeMode": "contain",
-      "backgroundColor": "#111"
+      "backgroundColor": "white"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -24,7 +24,7 @@
       "package": "berlin.code.codeconnect",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#111"
+        "backgroundColor": "white"
       }
     },
     "web": {

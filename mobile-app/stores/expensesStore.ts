@@ -21,6 +21,8 @@ export interface Expense {
 
   title: string;
   description: string;
+  currency: string;
+  location: string;
 
   date: Date;
 }

@@ -1,22 +1,20 @@
-import uuid from 'react-native-uuid';
 import { create } from 'zustand';
 
+import { GroupDto } from '../../backend/src/groups/dto/group.dto';
 import { persist } from './persist';
 import StorageKey from './StorageKey';
 
-export interface Group {
-  id: string;
-
-  title: string;
-}
+export type GroupModel = GroupDto;
 
 export interface GroupStore {
-  groups: Group[];
+  groups: GroupModel[];
 
   actions: {
-    createGroup: (group: Omit<Group, 'id'>) => Group;
-    deleteGroup: (groupId: string) => void;
-    setTitle: (groupId: string, title: string) => void;
+    addGroup: (group: GroupModel) => GroupModel;
+    setGroups: (groups: GroupModel[]) => GroupModel[];
+    updateGroup: (groupId: string, group: GroupModel) => GroupModel;
+    removeGroup: (groupId: string) => void;
+    clear: () => void;
   };
 }
 
@@ -24,31 +22,31 @@ export const useGroupsStore = create<GroupStore>(
   persist(StorageKey.GROUP, (set) => ({
     groups: [],
     actions: {
-      createGroup: (group) => {
-        const newGroup: Group = {
-          id: uuid.v4() as string,
-
-          title: group.title,
-        };
+      addGroup: (group) => {
         set((store) => ({
-          ...store,
-          groups: store.groups.concat([newGroup]),
+          groups: store.groups.concat([group]),
         }));
-        return newGroup;
+        return group;
       },
-      deleteGroup: (groupId) => {
+      setGroups: (groups) => {
+        set(() => ({
+          groups,
+        }));
+        return groups;
+      },
+      updateGroup: (groupId, group) => {
         set((store) => ({
-          ...store,
+          groups: store.groups.map((i) => (i.id === groupId ? group : i)),
+        }));
+        return group;
+      },
+      removeGroup: (groupId) => {
+        set((store) => ({
           groups: store.groups.filter((group) => group.id !== groupId),
         }));
       },
-      setTitle: (groupId, title) => {
-        set((store) => ({
-          ...store,
-          groups: store.groups.map((i) =>
-            i.id === groupId ? { ...i, title } : i
-          ),
-        }));
+      clear: () => {
+        set(() => ({ groups: [] }));
       },
     },
   }))

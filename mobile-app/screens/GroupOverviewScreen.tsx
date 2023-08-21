@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Animated, I18nManager, Pressable, Text, View } from 'react-native';
 import {
@@ -14,6 +15,8 @@ import { useExpensesStore } from '../stores/expensesStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
 import { useNavigation } from '../stores/navigationStore';
+
+const INDICATOR_PILL_HEIGHT = 48;
 
 const formatPriceEur = (price: number) =>
   price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
@@ -71,14 +74,14 @@ export default function GroupOverviewScreen({ navigation }: any) {
       groupId: i.groupId,
       totalAmount,
       amountForYou: totalAmount,
-      categories: categories.map((i) => ({ id: i.id, title: i.displayName })),
+      categories: categories.map((i) => ({ id: i.id, title: i.name })),
       sponsors: sponsors.map((i) => ({
         id: i.id,
-        displayName: i.displayName || 'Unknown',
+        displayName: i.name || 'Unknown',
       })),
       gainers: gainers.map((i) => ({
         id: i.id,
-        displayName: i.displayName || 'Unknown',
+        displayName: i.name || 'Unknown',
       })),
     };
   });
@@ -95,13 +98,21 @@ export default function GroupOverviewScreen({ navigation }: any) {
       totalAmount: activities.reduce((sum, i) => sum + i.totalAmount, 0),
       activities: activities,
     },
-    ...groupsStore.groups.map((i) => ({
-      ...i,
-      totalAmount: activities
-        .filter((j) => j.groupId === i.id)
-        .reduce((sum, i) => sum + i.totalAmount, 0),
-      activities: activities.filter((j) => j.groupId === i.id),
-    })),
+    ...groupsStore.groups
+      .map((i) => ({
+        title: i.name,
+        id: i.id,
+        totalAmount: activities
+          .filter((j) => j.groupId === i.id)
+          .reduce((sum, i) => sum + i.totalAmount, 0),
+        activities: activities.filter((j) => j.groupId === i.id),
+
+        lastUpdated: activities
+          .filter((j) => j.groupId === i.id)
+          .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))[0]?.date,
+        hasActivities: activities.filter((j) => j.groupId === i.id).length > 0,
+      }))
+      .sort((a, b) => dayjs(a.lastUpdated).diff(dayjs(b.lastUpdated))),
   ];
 
   const sceneMap = tabs.reduce<any>(
@@ -131,10 +142,6 @@ export default function GroupOverviewScreen({ navigation }: any) {
 
   const renderScene = SceneMap(sceneMap);
 
-  const [outerWidth, setOuterWidth] = useState(0);
-
-  const [anim, setAnim] = useState<any>(null);
-
   const renderIndicator = (
     props: SceneRendererProps & {
       navigationState: { index: number; routes: { key: string }[] };
@@ -142,6 +149,10 @@ export default function GroupOverviewScreen({ navigation }: any) {
     }
   ) => {
     const inputRange = props.navigationState.routes.map((_, i) => i);
+
+    const widthOfCenter = 100;
+
+    const combinedWidthOfPillEnds = INDICATOR_PILL_HEIGHT * 2;
 
     const translateXOutputRange = inputRange.map(
       (i) =>
@@ -152,7 +163,10 @@ export default function GroupOverviewScreen({ navigation }: any) {
     );
 
     const widthOutputRange = inputRange.map(
-      (i) => (tabWidths[props.navigationState.routes[i].key] || 0) / 100
+      (i) =>
+        ((tabWidths[props.navigationState.routes[i].key] || 0) -
+          combinedWidthOfPillEnds) /
+        widthOfCenter
     );
 
     const translateX = props.position.interpolate({
@@ -160,53 +174,64 @@ export default function GroupOverviewScreen({ navigation }: any) {
       outputRange: translateXOutputRange,
     });
 
-    if (!anim) {
-      console.log('test');
-
-      // setAnim(props.position.interpolate({
-      //   inputRange,
-      //   outputRange: inputRange.map(
-      //     (i) =>
-      //       (props.navigationState.routes
-      //         .slice(0, i)
-      //         .reduce((totalWidth, j) => totalWidth + tabWidths[j.key], 0) || 0) *
-      //       (I18nManager.isRTL ? -1 : 1) * -1
-      //   ),
-      // }));
-      setAnim(translateX);
-    }
-
     const scaleX = props.position.interpolate({
       inputRange,
       outputRange: widthOutputRange,
     });
 
-    // const [current, setCurrent] = useState(new Animated.Value(0));
+    const pillEndTranslateXOutputRange = inputRange.map(
+      (i) =>
+        (tabWidths[props.navigationState.routes[i].key] || 0) -
+        combinedWidthOfPillEnds -
+        widthOfCenter
+    );
 
-    // Animated.timing(current, {
-    //   toValue: 100,
-    //   duration: 100,
-    //   useNativeDriver: false,
-    // }).start();
+    const pillEndTranslateX = props.position.interpolate({
+      inputRange,
+      outputRange: pillEndTranslateXOutputRange,
+    });
 
     return (
-      <Animated.View style={{ transform: [{ translateX }] }}>
+      <Animated.View
+        style={{
+          transform: [{ translateX }],
+          flexDirection: 'row',
+          height: INDICATOR_PILL_HEIGHT,
+        }}
+      >
         <Animated.View
           style={{
+            width: INDICATOR_PILL_HEIGHT,
+            height: '100%',
+
+            borderTopLeftRadius: INDICATOR_PILL_HEIGHT / 2,
+            borderBottomLeftRadius: INDICATOR_PILL_HEIGHT / 2,
             backgroundColor: 'white',
-            width: 100,
-            height: 48,
-            // borderRadius: 24,
+          }}
+        ></Animated.View>
+        <Animated.View
+          style={{
+            width: widthOfCenter,
+            height: '100%',
             transform: [
               { translateX: -50 }, // Move the pivot point to the middle left
               { scaleX },
               { translateX: 50 }, // Move the pivot point back
             ],
-          }}
-          onLayout={(event) => {
-            setOuterWidth(event.nativeEvent.layout.width);
+            backgroundColor: 'white',
           }}
         />
+        <Animated.View
+          style={{
+            width: INDICATOR_PILL_HEIGHT,
+            height: '100%',
+            transform: [{ translateX: pillEndTranslateX }],
+
+            borderTopRightRadius: INDICATOR_PILL_HEIGHT / 2,
+            borderBottomRightRadius: INDICATOR_PILL_HEIGHT / 2,
+            backgroundColor: 'white',
+          }}
+        ></Animated.View>
       </Animated.View>
     );
   };
@@ -234,18 +259,23 @@ export default function GroupOverviewScreen({ navigation }: any) {
   ) => {
     const inputRange = props.navigationState.routes.map((_, i) => i);
 
-    const totalWidth =
+    const widthOfAllTabs =
       props.navigationState.routes.reduce(
         (totalWidth, j) => totalWidth + tabWidths[j.key],
         0
       ) || 0;
 
-    const maxOffset = totalWidth - props.layout.width;
+    const numRoutes = props.navigationState.routes.length;
+
+    const maxOffset =
+      widthOfAllTabs > props.layout.width
+        ? widthOfAllTabs - props.layout.width
+        : 0;
 
     const leftOrRight = I18nManager.isRTL ? 1 : -1;
 
     const translateXOutputRange = inputRange.map((i) => {
-      const ratioBetween0And1 = (1 / props.navigationState.routes.length) * i;
+      const ratioBetween0And1 = i / (numRoutes - 1);
 
       return ratioBetween0And1 * maxOffset * leftOrRight;
     });
@@ -260,7 +290,7 @@ export default function GroupOverviewScreen({ navigation }: any) {
         style={{
           transform: [{ translateX }],
 
-          width: totalWidth,
+          width: widthOfAllTabs,
         }}
       >
         <TabBar
@@ -277,8 +307,10 @@ export default function GroupOverviewScreen({ navigation }: any) {
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                  height: 48,
-                  paddingHorizontal: 12,
+                  height: INDICATOR_PILL_HEIGHT,
+                  paddingHorizontal: 16,
+
+                  minWidth: INDICATOR_PILL_HEIGHT * 2,
                 }}
               >
                 <Text style={{ fontSize: 13, color: '#222' }}>

@@ -80,7 +80,7 @@ export default function SwipeActivitiesModal({ navigation }: any) {
             fontSize: 16,
           }}
         >
-          {activeGroup?.title || 'Unknown'} ({activeActivities.length} items)
+          {activeGroup?.name || 'Unknown'} ({activeActivities.length} items)
         </Text>
         {/* <Text
           style={{

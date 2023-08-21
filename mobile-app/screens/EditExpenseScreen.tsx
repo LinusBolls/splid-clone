@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -6,46 +7,52 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import ChipMultiselect from '../components/ChipMultiselect';
 import ExpenseList from '../components/ExpenseList';
+import useCreateExpense from '../fetching/useCreateExpense';
 import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
 import { useExpenseDraftStore } from '../stores/expenseDraftStore';
-import { useExpensesStore } from '../stores/expensesStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
-import { useIdentityStore } from '../stores/identityStore';
 import { useNavigation } from '../stores/navigationStore';
 
 export default function EditExpenseScreen({ navigation }: any) {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = (data: any) => {
+    console.log(data); // You will see the submitted form data logged here
+  };
+
   const [isDatepickerOpen, setIsDatepickerOpen] = useState(false);
 
   const navigationStore = useNavigation();
-
-  const onItemClick = (item: { id: string }) => {
-    navigationStore.actions.setActiveSubexpenseId(item.id);
-
-    navigation.navigate('Modal');
-  };
 
   const draftStore = useExpenseDraftStore();
 
   const categoriesStore = useExpenseCategoriesStore();
 
-  const expensesStore = useExpensesStore();
-
   const membersStore = useGroupMembersStore();
 
   const titleInputRef = useRef<TextInput>(null);
 
-  const members = membersStore.members.filter(
-    (i) => i.groupId === navigationStore.activeGroupId
-  );
+  const createExpenseMutation = useCreateExpense();
+
+  const groupId = navigationStore.activeGroupId!;
+
+  const members = membersStore.members.filter((i) => i.groupId === groupId);
+
   const categories = categoriesStore.categories.filter(
-    (i) => i.groupId === navigationStore.activeGroupId
+    (i) => i.groupId === groupId
   );
 
   const totalAmount = draftStore.subexpenses.reduce(
     (sum, i) => sum + i.price,
     0
   );
-  const identityStore = useIdentityStore();
+  const sponsors = draftStore.sponsorShares.map(
+    (i) => members.find((j) => j.id === i.memberId)!
+  );
 
   useEffect(() => {
     if (titleInputRef.current) {
@@ -53,33 +60,19 @@ export default function EditExpenseScreen({ navigation }: any) {
     }
   }, []);
 
+  function onItemClick(item: { id: string }) {
+    navigationStore.actions.setActiveSubexpenseId(item.id);
+
+    navigation.navigate('Modal');
+  }
   async function onCreate() {
     // TODO: validate
 
-    const draft = draftStore.actions.getDraft();
+    const expense = draftStore.actions.getDraft();
 
-    const createExpenseRes = await identityStore.client!.expenses.create(
-      navigationStore.activeGroupId!,
-      {
-        name: draft.title,
-        description: '',
-        location: '',
-        categoryIds: [],
-      }
-    );
+    const subexpenses = draftStore.actions.getSubexpenseDrafts();
 
-    const createSubexpensesRes = await Promise.all(
-      draftStore.subexpenses.map((i) =>
-        identityStore.client!.subexpenses.create(createExpenseRes.id, {
-          name: i.title,
-        })
-      )
-    );
-
-    expensesStore.actions.createSubexpenses(
-      draftStore.actions.getSubexpenseDrafts()
-    );
-    expensesStore.actions.createExpense(navigationStore.activeGroupId!, draft);
+    await createExpenseMutation.mutateAsync({ groupId, expense, subexpenses });
 
     draftStore.actions.clear();
 
@@ -90,9 +83,6 @@ export default function EditExpenseScreen({ navigation }: any) {
 
     navigation.goBack();
   }
-  const sponsors = draftStore.sponsorShares.map((i) =>
-    members.find((j) => j.id === i.memberId)
-  );
 
   return (
     <View
@@ -187,7 +177,7 @@ export default function EditExpenseScreen({ navigation }: any) {
       />
       <ChipMultiselect
         options={categories.map((i) => ({
-          title: i.displayName,
+          title: i.name,
           isActive: draftStore.categoryIds.includes(i.id),
           value: i.id,
         }))}
@@ -283,7 +273,7 @@ export default function EditExpenseScreen({ navigation }: any) {
             }}
           >
             {sponsors.length
-              ? sponsors.map((i) => i?.displayName || 'Unknown').join(', ')
+              ? sponsors.map((i) => i?.name || 'Unknown').join(', ')
               : 'Who payed for this? (required)'}
           </Text>
         </Pressable>
@@ -294,10 +284,8 @@ export default function EditExpenseScreen({ navigation }: any) {
         >
           <ChipMultiselect
             options={members.map((i) => ({
-              title: i.displayName,
-              isActive: draftStore.sponsorShares.some(
-                (j) => j.memberId === i.id
-              ),
+              title: i.name,
+              isActive: sponsors.some((j) => j.id === i.id),
               value: i.id,
               icon: (
                 <View
@@ -339,10 +327,14 @@ export default function EditExpenseScreen({ navigation }: any) {
       <ExpenseList
         totalAmount={totalAmount}
         items={draftStore.subexpenses.map((i) => ({
-          ...i,
-          gainers: i.shares.map(
-            (j) => members.find((m) => m.id === j.memberId)!
-          ),
+          displayName: i.title,
+          id: i.id,
+          title: i.title,
+          price: i.price,
+          gainers: i.shares.map((j) => ({
+            ...members.find((m) => m.id === j.memberId)!,
+            displayName: members.find((m) => m.id === j.memberId)!.name,
+          })),
         }))}
         onItemClick={onItemClick}
         onAddItem={() => {
@@ -425,7 +417,12 @@ export default function EditExpenseScreen({ navigation }: any) {
               color: 'white',
             }}
           >
-            Save
+            {(() => {
+              if (createExpenseMutation.isError) return 'Error';
+              if (createExpenseMutation.isLoading) return '...';
+
+              return 'Save';
+            })()}
           </Text>
         </Pressable>
       </View>

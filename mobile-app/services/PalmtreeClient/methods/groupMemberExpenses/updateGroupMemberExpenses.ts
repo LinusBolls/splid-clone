@@ -21,7 +21,7 @@ export async function updateGroupMemberExpenses(
     subexpenseId +
     '/group-member-expenses';
 
-  const res = await config.httpClient.post<UpdateGroupMemberExpensesResponse>(
+  const res = await config.httpClient.put<UpdateGroupMemberExpensesResponse>(
     url,
     body,
     config.getHeaders()

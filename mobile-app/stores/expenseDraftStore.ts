@@ -23,6 +23,8 @@ export interface ExpenseDraftStore {
   date: Date;
   categoryIds: string[];
   subexpenses: SubexpenseDraft[];
+  currency: string;
+  location: string;
 
   sponsorShares: Share[];
 
@@ -43,9 +45,9 @@ export interface ExpenseDraftStore {
     setSubexpenseTitle: (subexpenseId: string, title: string) => void;
     setSubexpensePrice: (subexpenseId: string, price: number) => void;
 
-    addSubexpenseShare: (subexpenseId: string, memberId: string) => void;
-    removeSubexpenseShare: (subexpenseId: string, memberId: string) => void;
-    setSubexpenseSharePercentage: (
+    addGainerShare: (subexpenseId: string, memberId: string) => void;
+    removeGainerShare: (subexpenseId: string, memberId: string) => void;
+    setGainerSharePercentage: (
       subexpenseId: string,
       memberId: string,
       percentage: number
@@ -73,6 +75,8 @@ export const useExpenseDraftStore = create<ExpenseDraftStore>((set, get) => ({
     },
   ],
   sponsorShares: [],
+  currency: 'EUR',
+  location: '',
 
   actions: {
     setTitle: (title: string) => {
@@ -105,20 +109,42 @@ export const useExpenseDraftStore = create<ExpenseDraftStore>((set, get) => ({
       }));
     },
     addSponsorShare: (memberId: string) => {
-      const newShare = { id: uuid.v4() as string, memberId, percentage: 123 };
+      const percentageOfNewShare = 100 / (get().sponsorShares.length + 1);
 
+      const newShare = {
+        id: uuid.v4() as string,
+        memberId,
+        percentage: percentageOfNewShare,
+      };
       set((store) => ({
-        sponsorShares: [...store.sponsorShares, newShare],
+        sponsorShares: [
+          ...store.sponsorShares.map((i) => ({
+            ...i,
+            percentage:
+              i.percentage - (percentageOfNewShare / 100) * i.percentage,
+          })),
+          newShare,
+        ],
       }));
     },
     removeSponsorShare: (memberId: string) => {
+      const shareToBeRemoved = get().sponsorShares.find(
+        (i) => i.memberId === memberId
+      );
+      const percentageToBeSplit = shareToBeRemoved?.percentage ?? 0;
+
       set((store) => ({
-        sponsorShares: store.sponsorShares.filter(
-          (i) => i.memberId !== memberId
-        ),
+        sponsorShares: store.sponsorShares
+          .filter((i) => i.memberId !== memberId)
+          .map((i) => ({
+            ...i,
+            percentage:
+              i.percentage + (percentageToBeSplit / 100) * i.percentage,
+          })),
       }));
     },
     setSponsorSharePercentage: (memberId: string, percentage: number) => {
+      throw new Error('not sufficiently implemented');
       set((store) => ({
         sponsorShares: store.sponsorShares.map((i) =>
           i.memberId === memberId ? { ...i, percentage } : i
@@ -173,31 +199,31 @@ export const useExpenseDraftStore = create<ExpenseDraftStore>((set, get) => ({
         return { ...store, subexpenses };
       });
     },
-    addSubexpenseShare: (subexpenseId: string, memberId: string) => {
+    addGainerShare: (subexpenseId: string, memberId: string) => {
+      const percentageOfNewShare =
+        100 /
+        ((get().subexpenses.find((i) => i.id === subexpenseId)?.shares
+          ?.length ?? 0) +
+          1);
+
       set((store) => {
         const subexpenses = store.subexpenses.map((subexpense) => {
           if (subexpense.id === subexpenseId) {
             const share = {
               id: uuid.v4() as string,
               memberId,
-              percentage: 0,
+              percentage: percentageOfNewShare,
             };
-            return { ...subexpense, shares: [...subexpense.shares, share] };
-          }
-          return subexpense;
-        });
-        return { ...store, subexpenses };
-      });
-    },
-    removeSubexpenseShare: (subexpenseId: string, memberId: string) => {
-      set((store) => {
-        const subexpenses = store.subexpenses.map((subexpense) => {
-          if (subexpense.id === subexpenseId) {
             return {
               ...subexpense,
-              shares: subexpense.shares.filter(
-                (share) => share.memberId !== memberId
-              ),
+              shares: [
+                ...subexpense.shares.map((i) => ({
+                  ...i,
+                  percentage:
+                    i.percentage - (percentageOfNewShare / 100) * i.percentage,
+                })),
+                share,
+              ],
             };
           }
           return subexpense;
@@ -205,11 +231,38 @@ export const useExpenseDraftStore = create<ExpenseDraftStore>((set, get) => ({
         return { ...store, subexpenses };
       });
     },
-    setSubexpenseSharePercentage: (
+    removeGainerShare: (subexpenseId: string, memberId: string) => {
+      const shareToBeRemoved = get()
+        .subexpenses.find((i) => i.id === subexpenseId)
+        ?.shares?.find((i) => i.memberId === memberId);
+
+      if (!shareToBeRemoved) return;
+
+      const percentageToBeSplit = shareToBeRemoved.percentage ?? 0;
+
+      set((store) => ({
+        subexpenses: store.subexpenses.map((i) =>
+          i.id === subexpenseId
+            ? {
+                ...i,
+                shares: i.shares
+                  .filter((j) => j.memberId !== memberId)
+                  .map((j) => ({
+                    ...j,
+                    percentage:
+                      j.percentage + (percentageToBeSplit / 100) * j.percentage,
+                  })),
+              }
+            : i
+        ),
+      }));
+    },
+    setGainerSharePercentage: (
       subexpenseId: string,
       memberId: string,
       percentage: number
     ) => {
+      throw new Error('not sufficiently implemented');
       set((store) => {
         const subexpenses = store.subexpenses.map((subexpense) => {
           if (subexpense.id === subexpenseId) {
@@ -236,6 +289,8 @@ export const useExpenseDraftStore = create<ExpenseDraftStore>((set, get) => ({
         date: store.date,
         subExpenseIds: store.subexpenses.map((i) => i.id),
         categoryIds: store.categoryIds,
+        currency: store.currency,
+        location: store.location,
       };
       return draft;
     },

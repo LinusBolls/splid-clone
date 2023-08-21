@@ -11,11 +11,15 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { maybeCompleteAuthSession } from 'expo-web-browser';
 import { ColorSchemeName } from 'react-native';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
+import useFetchExpenseCategories from '../fetching/useFetchExpenseCategories';
+import useFetchGroups from '../fetching/useFetchGroups';
 import CreateNewGroup from '../screens/CreateNewGroup';
 import CreateOrJoinGroupScreen from '../screens/CreateOrJoinGroupScreen';
 import EditExpenseModal from '../screens/EditExpenseModal';
 import EditExpenseScreen from '../screens/EditExpenseScreen';
+import ErrorScreen from '../screens/ErrorScreen';
 import GroupOverviewScreen from '../screens/GroupOverviewScreen';
 import JoinGroupScreen from '../screens/JoinGroupScreen';
 import SwipeActivitiesModal from '../screens/SwipeActivitiesModal';
@@ -29,13 +33,17 @@ export default function Navigation({
 }: {
   colorScheme: ColorSchemeName;
 }) {
+  const queryClient = new QueryClient();
+
   return (
-    <NavigationContainer
-      linking={LinkingConfiguration}
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-    >
-      <RootNavigator />
-    </NavigationContainer>
+    <QueryClientProvider client={queryClient}>
+      <NavigationContainer
+        linking={LinkingConfiguration}
+        theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+      >
+        <RootNavigator />
+      </NavigationContainer>
+    </QueryClientProvider>
   );
 }
 
@@ -53,6 +61,22 @@ function RootNavigator() {
   const groupsStore = useGroupsStore();
 
   const activeGroupId = navigationStore.activeGroupId;
+
+  const dong = useFetchGroups();
+
+  const ding = useFetchExpenseCategories();
+
+  if (dong.hasGroupsError || ding.hasCategoriesError) {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Root"
+          component={ErrorScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    );
+  }
 
   if (!activeGroupId) {
     if (groupsStore.groups.length) {

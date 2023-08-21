@@ -4,12 +4,14 @@ import { create } from 'zustand';
 
 import { Group } from './groupsStore';
 
+export interface GroupMemberDraft {
+  id: string;
+  displayName: string;
+}
+
 export interface GroupDraftStore {
   title: string;
-  groupMembers: {
-    id: string;
-    displayName: string;
-  }[];
+  groupMembers: GroupMemberDraft[];
 
   actions: {
     addEmptyGroupMember: () => void;

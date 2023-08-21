@@ -1,29 +1,29 @@
 import uuid from 'react-native-uuid';
 import { create } from 'zustand';
 
+import { GroupMemberDto } from '../../backend/src/groups/group-members/dto/group-member.dto';
 import { persist } from './persist';
 import StorageKey from './StorageKey';
 
-export interface GroupMember {
-  id: string;
-  groupId: string;
-
-  displayName: string;
-}
 export interface GroupMembersStore {
-  members: GroupMember[];
+  members: (GroupMemberDto & { groupId: string })[];
 
   actions: {
-    createMember: (
+    addMember: (groupId: string, member: GroupMemberDto) => GroupMemberDto;
+    addMembers: (
       groupId: string,
-      member: Omit<GroupMember, 'id' | 'groupId'>
-    ) => GroupMember;
-    createMembers: (
+      members: GroupMemberDto[]
+    ) => GroupMemberDto[];
+    setMembers: (
       groupId: string,
-      members: Omit<GroupMember, 'id' | 'groupId'>[]
-    ) => GroupMember[];
+      members: GroupMemberDto[]
+    ) => GroupMemberDto[];
     deleteMember: (memberId: string) => void;
-    renameMember: (memberId: string, displayName: string) => void;
+    updateMember: (
+      groupId: string,
+      memberId: string,
+      member: GroupMemberDto
+    ) => void;
   };
 }
 export const useGroupMembersStore = create<GroupMembersStore>(
@@ -31,41 +31,35 @@ export const useGroupMembersStore = create<GroupMembersStore>(
     members: [],
 
     actions: {
-      createMember: (groupId, member) => {
-        const newMember = {
-          id: uuid.v4() as string,
-          groupId,
-
-          displayName: member.displayName,
-        };
-        set((store) => {
-          return { ...store, members: [...store.members, newMember] };
-        });
-        return newMember;
-      },
-      createMembers: (groupId, members) => {
-        const newMembers = members.map((i) => ({
-          id: uuid.v4() as string,
-          groupId,
-
-          displayName: i.displayName,
+      addMember: (groupId, member) => {
+        set((store) => ({
+          members: store.members.concat([{ ...member, groupId }]),
         }));
-        set((store) => {
-          return { ...store, members: [...store.members, ...newMembers] };
-        });
-        return newMembers;
+        return member;
+      },
+      addMembers: (groupId, members) => {
+        set((store) => ({
+          members: store.members.concat(
+            members.map((i) => ({ ...i, groupId }))
+          ),
+        }));
+        return members;
+      },
+      setMembers: (groupId, members) => {
+        set((store) => ({
+          members: members.map((i) => ({ ...i, groupId })),
+        }));
+        return members;
       },
       deleteMember: (memberId) => {
         set((store) => ({
-          ...store,
           members: store.members.filter((member) => member.id !== memberId),
         }));
       },
-      renameMember: (memberId, displayName) => {
+      updateMember: (groupId, memberId, member) => {
         set((store) => ({
-          ...store,
           members: store.members.map((i) =>
-            i.id === memberId ? { ...i, displayName } : i
+            i.id === memberId ? { ...member, groupId } : i
           ),
         }));
       },
