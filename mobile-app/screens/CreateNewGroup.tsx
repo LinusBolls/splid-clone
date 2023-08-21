@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Linking, Pressable, Text, TextInput } from 'react-native';
+import { Linking, Pressable, ScrollView, Text, TextInput } from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+import Button from '../components/Button';
 import { View } from '../components/Themed';
 import useCreateGroup from '../fetching/useCreateGroup';
 import useGroupDraftStore from '../stores/groupDraftStore';
@@ -9,6 +11,12 @@ import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
 import { useIdentity } from '../stores/identityStore';
 import { useNavigation } from '../stores/navigationStore';
+
+const causeHapticBump = () =>
+  ReactNativeHapticFeedback.trigger('impactLight', {
+    enableVibrateFallback: true,
+    ignoreAndroidSystemSettings: false,
+  });
 
 export default function CreateNewGroup({ navigation }: any) {
   const groupStore = useGroupsStore();
@@ -65,128 +73,147 @@ export default function CreateNewGroup({ navigation }: any) {
     <View
       style={{
         minHeight: '100%',
-        paddingHorizontal: 16,
 
         backgroundColor: 'white',
       }}
     >
-      <View
+      <ScrollView
         style={{
-          height: 16,
-        }}
-      ></View>
-      <View
-        style={{
-          height: 48,
-        }}
-      ></View>
+          flex: 1,
 
-      <TextInput
-        multiline
-        blurOnSubmit
-        selectTextOnFocus
-        ref={titleInputRef}
-        placeholder={'Add group title (required)'}
-        style={{
-          fontSize: 26,
-          color: '#222',
-
-          textAlign: 'center',
-
+          paddingHorizontal: 16,
           marginBottom: 16,
         }}
-        onChangeText={(text) => groupDraftStore.actions.setTitle(text)}
-        value={groupDraftStore.title}
-      />
-
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-
-          height: 48,
-          paddingLeft: 16,
-
-          backgroundColor: 'white',
-        }}
       >
-        <Text
+        <View
           style={{
-            flexGrow: 1,
+            height: 16,
 
-            fontSize: 16,
-
-            color: '#222',
+            backgroundColor: 'transparent',
           }}
-        >
-          Members ({groupDraftStore.groupMembers.length})
-        </Text>
-        <Pressable
-          onPress={() => groupDraftStore.actions.addEmptyGroupMember()}
+        />
+        <View
           style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-
-            width: 48,
             height: 48,
+
+            backgroundColor: 'transparent',
+          }}
+        />
+        <TextInput
+          multiline
+          blurOnSubmit
+          selectTextOnFocus
+          ref={titleInputRef}
+          placeholder={'Add group title (required)'}
+          style={{
+            fontSize: 26,
+            color: '#222',
+
+            textAlign: 'center',
+
+            marginBottom: 16,
+          }}
+          onChangeText={(text) => groupDraftStore.actions.setTitle(text)}
+          value={groupDraftStore.title}
+        />
+        <View
+          style={{
+            overflow: 'hidden',
+
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: '#eee',
           }}
         >
-          <MaterialIcons name="add-circle-outline" size={20} color="#222" />
-        </Pressable>
-      </View>
-      <View
-        style={{
-          flexDirection: 'column',
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
 
-          backgroundColor: '#C4C4C4',
-        }}
-      >
-        {groupDraftStore.groupMembers.map((i) => {
-          return (
-            <View
-              key={i.id}
+              height: 48,
+              paddingLeft: 16,
+
+              backgroundColor: 'white',
+            }}
+          >
+            <Text
               style={{
-                flexDirection: 'row',
+                flexGrow: 1,
 
-                height: 48,
-                paddingLeft: 16,
+                fontSize: 16,
 
-                backgroundColor: 'white',
-
-                marginTop: 1,
+                color: '#222',
               }}
             >
+              Members ({groupDraftStore.groupMembers.length})
+            </Text>
+            <Pressable
+              onPress={() => {
+                causeHapticBump();
+
+                groupDraftStore.actions.addEmptyGroupMember();
+              }}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+
+                width: 48,
+                height: 48,
+              }}
+            >
+              <MaterialIcons name="add-circle-outline" size={20} color="#222" />
+            </Pressable>
+          </View>
+          {groupDraftStore.groupMembers.map((i) => {
+            return (
               <View
+                key={i.id}
                 style={{
-                  justifyContent: 'center',
+                  flexDirection: 'row',
 
                   height: 48,
-                  flexGrow: 1,
+                  paddingLeft: 16,
+
+                  backgroundColor: 'white',
+
+                  borderTopColor: '#eee',
+                  borderTopWidth: 1,
                 }}
               >
-                <TextInput
-                  blurOnSubmit
-                  selectTextOnFocus
-                  autoCorrect={false}
+                <View
                   style={{
-                    fontSize: 13,
-                    color: '#222',
+                    justifyContent: 'center',
 
-                    height: '100%',
+                    height: 48,
                     flexGrow: 1,
+
+                    backgroundColor: 'transparent',
                   }}
-                  value={i.displayName}
-                  onChangeText={(value) =>
-                    groupDraftStore.actions.setGroupMemberDisplayName(
-                      i.id,
-                      value
-                    )
-                  }
-                  placeholder="Add member name... (required)"
-                  placeholderTextColor="#888"
-                />
-              </View>
-              {/* <Pressable
+                >
+                  <TextInput
+                    blurOnSubmit
+                    selectTextOnFocus
+                    autoCorrect={false}
+                    autoCapitalize="words"
+                    style={{
+                      fontSize: 13,
+                      color: '#222',
+
+                      height: '100%',
+                      flexGrow: 1,
+                    }}
+                    value={i.displayName}
+                    onChangeText={(value) =>
+                      groupDraftStore.actions.setGroupMemberDisplayName(
+                        i.id,
+                        value
+                      )
+                    }
+                    placeholder="Add member name... (required)"
+                    placeholderTextColor="#888"
+                  />
+                </View>
+                {/* <Pressable
                 style={{
                   justifyContent: 'center',
 
@@ -222,101 +249,56 @@ export default function CreateNewGroup({ navigation }: any) {
                   )}
                 </View>
               </Pressable> */}
-              <Pressable
-                onPress={() => groupDraftStore.actions.removeGroupMember(i.id)}
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                <Pressable
+                  onPress={() => {
+                    groupDraftStore.actions.removeGroupMember(i.id);
 
-                  width: 48,
-                  height: 48,
-                }}
-              >
-                <MaterialIcons
-                  name="remove-circle-outline"
-                  size={20}
-                  color="#222"
-                />
-              </Pressable>
-            </View>
-          );
-        })}
-      </View>
+                    causeHapticBump();
+                  }}
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+
+                    width: 48,
+                    height: 48,
+                  }}
+                >
+                  <MaterialIcons
+                    name="remove-circle-outline"
+                    size={20}
+                    color="#222"
+                  />
+                </Pressable>
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
       <View
         style={{
           flexDirection: 'row',
           justifyContent: 'flex-end',
 
-          marginVertical: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 8,
 
           backgroundColor: 'transparent',
+
+          borderTopColor: '#eee',
+          borderTopWidth: 1,
         }}
       >
-        <Pressable
-          onPress={onCancel}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
+        <Button text="Cancel" variant="outlined" onClick={onCancel} />
+        <Button
+          variant="primary"
+          text={(() => {
+            if (createGroupMutation.isError) return 'Error';
 
-            alignSelf: 'flex-start',
-
-            height: 48,
-            paddingHorizontal: 16,
-
-            backgroundColor: 'white',
-
-            borderWidth: 1,
-
-            borderColor: '#C4C4C4',
-
-            borderRadius: 8,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-
-              color: '#222',
-            }}
-          >
-            Cancel
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={onCreate}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-
-            alignSelf: 'flex-start',
-
-            height: 48,
-            paddingHorizontal: 16,
-
-            backgroundColor: '#682BE9',
-
-            borderRadius: 8,
-
-            marginLeft: 16,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-
-              color: 'white',
-            }}
-          >
-            {(() => {
-              if (createGroupMutation.isError) return 'Error';
-              if (createGroupMutation.isLoading) return '...';
-
-              return 'Save';
-            })()}
-          </Text>
-        </Pressable>
+            return 'Save';
+          })()}
+          isLoading={createGroupMutation.isLoading}
+          onClick={onCreate}
+        />
       </View>
     </View>
   );

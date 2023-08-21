@@ -1,25 +1,24 @@
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Animated, I18nManager, Pressable, Text, View } from 'react-native';
-import {
-  NavigationState,
-  SceneMap,
-  SceneRendererProps,
-  TabBar,
-  TabView,
-} from 'react-native-tab-view';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { SceneMap, TabView } from 'react-native-tab-view';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import ActivityList, { ExpenseActivity } from '../components/ActivityList';
+import FloatingActionButton from '../components/FloatingActionButton';
+import getPaginationDotTabBarRenderFunction from '../components/TabBarWithPillShapedIndicator/paginationDotTabBar';
+import getTabBarRenderFunction from '../components/TabBarWithPillShapedIndicator/renderTabBar';
 import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
 import { useExpensesStore } from '../stores/expensesStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
 import { useNavigation } from '../stores/navigationStore';
 
-const INDICATOR_PILL_HEIGHT = 48;
-
 const formatPriceEur = (price: number) =>
   price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
+
+// const INDICATOR_PILL_HEIGHT = 48;
 
 export default function GroupOverviewScreen({ navigation }: any) {
   const { activeGroupId } = useNavigation();
@@ -35,12 +34,12 @@ export default function GroupOverviewScreen({ navigation }: any) {
   const navigationStore = useNavigation();
 
   const activities = expenses.map<ExpenseActivity>((i) => {
-    const subexpenses = i.subExpenseIds.map(
-      (id) => expensesStore.subexpenses.find((j) => j.id === id)!
-    );
-    const categories = i.categoryIds.map(
-      (id) => expenseCategoriesStore.categories.find((j) => j.id === id)!
-    );
+    const subexpenses = i.subExpenseIds
+      .map((id) => expensesStore.subexpenses.find((j) => j.id === id)!)
+      .filter(Boolean);
+    const categories = i.categoryIds
+      .map((id) => expenseCategoriesStore.categories.find((j) => j.id === id)!)
+      .filter(Boolean);
 
     const sponsorIds = i.sponsorShares.reduce<string[]>(
       (memberIds, i) => [...memberIds, i.memberId],
@@ -53,19 +52,18 @@ export default function GroupOverviewScreen({ navigation }: any) {
 
     const sponsors = sponsorIds
       .map((id) => membersStore.members.find((j) => j.id === id)!)
+      .filter(Boolean)
       .filter(
         (sponsor, index, self) =>
           index === self.findIndex((s) => s?.id === sponsor?.id)
-      )
-      .filter((i) => i != null);
-
+      );
     const gainers = gainerIds
       .map((id) => membersStore.members.find((j) => j.id === id)!)
+      .filter(Boolean)
       .filter(
         (sponsor, index, self) =>
           index === self.findIndex((s) => s?.id === sponsor?.id)
-      )
-      .filter((i) => i != null);
+      );
 
     const totalAmount = subexpenses.reduce((sum, k) => sum + k.price, 0);
 
@@ -115,18 +113,100 @@ export default function GroupOverviewScreen({ navigation }: any) {
       .sort((a, b) => dayjs(a.lastUpdated).diff(dayjs(b.lastUpdated))),
   ];
 
-  const sceneMap = tabs.reduce<any>(
+  const sceneMap = tabs.reduce(
     (sum, i) => ({
       ...sum,
       [i.id]: () => (
-        <ActivityList
-          activities={i.activities}
-          onActivityClick={(activity) => {
-            navigationStore.actions.setActiveExpenseId(activity.id);
+        <View
+          style={{
+            position: 'relative',
 
-            navigation.navigate('SwipeActivitiesModal');
+            flex: 1,
+
+            paddingHorizontal: 16,
           }}
-        />
+        >
+          <ScrollView
+            style={{
+              position: 'relative',
+
+              flex: 1,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+              }}
+            >
+              <Pressable
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+
+                  height: 48,
+                  paddingHorizontal: 16,
+
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: '#eee',
+
+                  flex: 1,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#222',
+                    fontSize: 13,
+                  }}
+                >
+                  {membersStore.members
+                    .filter((i) => i.groupId === activeGroupId)
+                    .map((i) => i.name)
+                    .join(', ')}
+                </Text>
+                <MaterialIcons
+                  name="arrow-forward-ios"
+                  size={20}
+                  color="#888"
+                />
+              </Pressable>
+
+              <Pressable
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+
+                  width: 48,
+                  height: 48,
+
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: '#eee',
+
+                  marginLeft: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#222',
+                    fontSize: 13,
+                  }}
+                >
+                  <MaterialIcons name="edit" size={20} color="#888" />
+                </Text>
+              </Pressable>
+            </View>
+            <ActivityList
+              activities={i.activities}
+              onActivityClick={(activity) => {
+                navigationStore.actions.setActiveExpenseId(activity.id);
+
+                navigation.navigate('SwipeActivitiesModal');
+              }}
+            />
+          </ScrollView>
+        </View>
       ),
     }),
     {}
@@ -135,209 +215,23 @@ export default function GroupOverviewScreen({ navigation }: any) {
   const routes = tabs.map((i) => ({
     key: i.id,
     title: i.title,
-    totalAmount: i.totalAmount,
+    subtitle: formatPriceEur(i.totalAmount),
   }));
 
   const [index, setIndex] = useState(0);
 
+  function onSwipe(swipedToIndex: number) {
+    setIndex(swipedToIndex);
+  }
+
   const renderScene = SceneMap(sceneMap);
-
-  const renderIndicator = (
-    props: SceneRendererProps & {
-      navigationState: { index: number; routes: { key: string }[] };
-      getTabWidth: (i: number) => number;
-    }
-  ) => {
-    const inputRange = props.navigationState.routes.map((_, i) => i);
-
-    const widthOfCenter = 100;
-
-    const combinedWidthOfPillEnds = INDICATOR_PILL_HEIGHT * 2;
-
-    const translateXOutputRange = inputRange.map(
-      (i) =>
-        (props.navigationState.routes
-          .slice(0, i)
-          .reduce((totalWidth, j) => totalWidth + tabWidths[j.key], 0) || 0) *
-        (I18nManager.isRTL ? -1 : 1)
-    );
-
-    const widthOutputRange = inputRange.map(
-      (i) =>
-        ((tabWidths[props.navigationState.routes[i].key] || 0) -
-          combinedWidthOfPillEnds) /
-        widthOfCenter
-    );
-
-    const translateX = props.position.interpolate({
-      inputRange,
-      outputRange: translateXOutputRange,
-    });
-
-    const scaleX = props.position.interpolate({
-      inputRange,
-      outputRange: widthOutputRange,
-    });
-
-    const pillEndTranslateXOutputRange = inputRange.map(
-      (i) =>
-        (tabWidths[props.navigationState.routes[i].key] || 0) -
-        combinedWidthOfPillEnds -
-        widthOfCenter
-    );
-
-    const pillEndTranslateX = props.position.interpolate({
-      inputRange,
-      outputRange: pillEndTranslateXOutputRange,
-    });
-
-    return (
-      <Animated.View
-        style={{
-          transform: [{ translateX }],
-          flexDirection: 'row',
-          height: INDICATOR_PILL_HEIGHT,
-        }}
-      >
-        <Animated.View
-          style={{
-            width: INDICATOR_PILL_HEIGHT,
-            height: '100%',
-
-            borderTopLeftRadius: INDICATOR_PILL_HEIGHT / 2,
-            borderBottomLeftRadius: INDICATOR_PILL_HEIGHT / 2,
-            backgroundColor: 'white',
-          }}
-        ></Animated.View>
-        <Animated.View
-          style={{
-            width: widthOfCenter,
-            height: '100%',
-            transform: [
-              { translateX: -50 }, // Move the pivot point to the middle left
-              { scaleX },
-              { translateX: 50 }, // Move the pivot point back
-            ],
-            backgroundColor: 'white',
-          }}
-        />
-        <Animated.View
-          style={{
-            width: INDICATOR_PILL_HEIGHT,
-            height: '100%',
-            transform: [{ translateX: pillEndTranslateX }],
-
-            borderTopRightRadius: INDICATOR_PILL_HEIGHT / 2,
-            borderBottomRightRadius: INDICATOR_PILL_HEIGHT / 2,
-            backgroundColor: 'white',
-          }}
-        ></Animated.View>
-      </Animated.View>
-    );
-  };
-
-  const [tabWidths, setTabWidths] = useState<Record<string, number>>({});
-
-  const updateTabWidth = (index: string, width: number) => {
-    setTabWidths((prev) => {
-      const newWidths = { ...prev };
-
-      newWidths[index] = width;
-
-      return newWidths;
-    });
-  };
-
-  const renderTabBar = (
-    props: SceneRendererProps & {
-      navigationState: NavigationState<{
-        key: string;
-        title: string;
-        totalAmount: number;
-      }>;
-    }
-  ) => {
-    const inputRange = props.navigationState.routes.map((_, i) => i);
-
-    const widthOfAllTabs =
-      props.navigationState.routes.reduce(
-        (totalWidth, j) => totalWidth + tabWidths[j.key],
-        0
-      ) || 0;
-
-    const numRoutes = props.navigationState.routes.length;
-
-    const maxOffset =
-      widthOfAllTabs > props.layout.width
-        ? widthOfAllTabs - props.layout.width
-        : 0;
-
-    const leftOrRight = I18nManager.isRTL ? 1 : -1;
-
-    const translateXOutputRange = inputRange.map((i) => {
-      const ratioBetween0And1 = i / (numRoutes - 1);
-
-      return ratioBetween0And1 * maxOffset * leftOrRight;
-    });
-
-    const translateX = props.position.interpolate({
-      inputRange,
-      outputRange: translateXOutputRange,
-    });
-
-    return (
-      <Animated.View
-        style={{
-          transform: [{ translateX }],
-
-          width: widthOfAllTabs,
-        }}
-      >
-        <TabBar
-          renderIndicator={renderIndicator}
-          renderTabBarItem={(itemProps) => {
-            return (
-              <Pressable
-                onLayout={(event) => {
-                  const width = event.nativeEvent.layout.width;
-
-                  updateTabWidth(itemProps.key, width);
-                }}
-                onPress={itemProps.onPress}
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: INDICATOR_PILL_HEIGHT,
-                  paddingHorizontal: 16,
-
-                  minWidth: INDICATOR_PILL_HEIGHT * 2,
-                }}
-              >
-                <Text style={{ fontSize: 13, color: '#222' }}>
-                  {itemProps.route.title}
-                </Text>
-                <Text style={{ fontSize: 10, color: '#888' }}>
-                  {formatPriceEur(itemProps.route.totalAmount)}
-                </Text>
-              </Pressable>
-            );
-          }}
-          {...props}
-          indicatorStyle={{ backgroundColor: '#682BE9' }}
-          style={{ backgroundColor: 'transparent' }}
-          labelStyle={{ color: '#222', textTransform: 'none' }}
-        />
-      </Animated.View>
-    );
-  };
 
   return (
     <View
       style={{
         minHeight: '100%',
-        paddingHorizontal: 16,
 
-        backgroundColor: '#F7F7F7',
+        backgroundColor: 'white',
       }}
     >
       <View
@@ -350,19 +244,33 @@ export default function GroupOverviewScreen({ navigation }: any) {
           height: 48,
         }}
       ></View>
-      <Pressable onPress={() => navigation.navigate('CreateExpense')}>
-        <Text style={{}}>New expense</Text>
-      </Pressable>
       <Pressable onPress={() => navigation.navigate('CreateGroup')}>
         <Text style={{}}>New group</Text>
       </Pressable>
-      <TabView
-        style={{ width: 'auto' }}
-        navigationState={{ index, routes }}
-        renderScene={renderScene}
-        renderTabBar={renderTabBar}
-        onIndexChange={setIndex}
-      />
+      <View
+        style={{
+          position: 'relative',
+
+          flex: 1,
+        }}
+      >
+        <TabView
+          navigationState={{ index, routes }}
+          onSwipeStart={() => {
+            ReactNativeHapticFeedback.trigger('impactLight', {
+              enableVibrateFallback: true,
+              ignoreAndroidSystemSettings: false,
+            });
+          }}
+          onIndexChange={onSwipe}
+          renderScene={renderScene}
+          renderTabBar={getTabBarRenderFunction(48)}
+        />
+        <FloatingActionButton
+          onClick={() => navigation.navigate('CreateExpense')}
+          text={<MaterialIcons name="add" size={32} color="white" />}
+        />
+      </View>
     </View>
   );
 }

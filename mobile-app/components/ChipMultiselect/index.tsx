@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 import Chip from './Chip';
 
@@ -44,11 +45,16 @@ export default function ChipMultiselect({
         <Chip
           key={i.value as string}
           {...i}
-          onPress={() =>
+          onPress={() => {
+            ReactNativeHapticFeedback.trigger('impactLight', {
+              enableVibrateFallback: true,
+              ignoreAndroidSystemSettings: false,
+            });
+
             i.isActive
               ? onOptionUnselect({ ...i, isActive: false })
-              : onOptionSelect({ ...i, isActive: true })
-          }
+              : onOptionSelect({ ...i, isActive: true });
+          }}
         />
       ))}
       {hasAddOptionButton && (
