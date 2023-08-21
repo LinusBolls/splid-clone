@@ -16,13 +16,15 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { GroupsService } from '../groups.service';
 import { GroupMembersService } from '../group-members/group-members.service';
+import { PaymentMapper } from './mapping/payment.mapper';
 
-@Controller('/groups/:groupId/payment')
+@Controller('/groups/:groupId/payments')
 export class PaymentController {
   constructor(
     private readonly paymentService: PaymentService,
     private readonly groupsService: GroupsService,
     private readonly groupMembersService: GroupMembersService,
+    private readonly paymentMapper: PaymentMapper,
   ) {}
 
   @Post()
@@ -45,7 +47,9 @@ export class PaymentController {
         HttpStatus.BAD_REQUEST,
       );
 
-    return this.paymentService.create(createPaymentDto, groupId);
+    const result = await this.paymentService.create(createPaymentDto, groupId);
+
+    return this.paymentMapper.dtoFromEntity(result);
   }
 
   @Get()
@@ -68,7 +72,9 @@ export class PaymentController {
     if (receiverId != null)
       return this.paymentService.findAllFromReceiver(groupId, receiverId);
 
-    return this.paymentService.findAll(groupId);
+    const result = await this.paymentService.findAll(groupId);
+
+    return this.paymentMapper.dtosFromEntities(result);
   }
 
   @Get(':id')
@@ -82,7 +88,7 @@ export class PaymentController {
     if (findResult === null)
       throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
 
-    return findResult;
+    return this.paymentMapper.dtoFromEntity(findResult);
   }
 
   @Put(':id')
@@ -105,14 +111,20 @@ export class PaymentController {
 
     if (
       updatePaymentDto.senderId === updatePaymentDto.receiverId &&
-        updatePaymentDto.senderId != null
+      updatePaymentDto.senderId != null
     )
       throw new HttpException(
         'Sender and Reiceiver cannot be the same',
         HttpStatus.BAD_REQUEST,
       );
 
-    return this.paymentService.update(id, updatePaymentDto, groupId);
+    const result = await this.paymentService.update(
+      id,
+      updatePaymentDto,
+      groupId,
+    );
+
+    return this.paymentMapper.dtoFromEntity(result);
   }
 
   @Delete(':id')

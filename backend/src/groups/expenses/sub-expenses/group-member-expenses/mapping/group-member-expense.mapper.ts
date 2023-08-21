@@ -18,13 +18,7 @@ export class GroupMemberExpenseMapper {
     return expenses.map((expense) => this.dtoFromEntity(expense));
   }
 
-  @Mappings(
-    { target: 'amount', expression: 'Big(expense.amount)' },
-    {
-      target: 'amountReferenceCurrency',
-      expression: 'Big(expense.amountReferenceCurrency)',
-    },
-  )
+  @Mappings()
   entityFromDb(expense: GroupMemberExpense): GroupMemberExpenseEntity {
     return new GroupMemberExpenseEntity();
   }

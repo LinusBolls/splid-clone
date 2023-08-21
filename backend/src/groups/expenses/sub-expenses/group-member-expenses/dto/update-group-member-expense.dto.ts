@@ -10,6 +10,7 @@ export class UpdateGroupMemberExpenseDto {
   role: keyof typeof GROUP_MEMBER_EXPENSE_ROLE;
 
   @IsNotEmpty()
+  @Type(() => Big)
   amount: Big;
 
   @IsNotEmpty()

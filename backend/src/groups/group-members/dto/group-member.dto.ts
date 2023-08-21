@@ -1,10 +1,14 @@
+import { Expose } from 'class-transformer';
 import { PaymentDetail } from '../payment-details/entities/payment-detail.entity';
+import Big from "big.js";
 
 export class GroupMemberDto {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  name: string;
-  status: string;
-  paymentDetails: PaymentDetail[];
+  @Expose() id: string;
+  
+  @Expose() name: string;
+  @Expose() status: string;
+  @Expose() balance: Big;
+
+  @Expose() groupId: string
+  @Expose() paymentDetails: PaymentDetail[];
 }

@@ -15,6 +15,7 @@ import { SubExpensesService } from '../sub-expenses.service';
 import { ExpensesService } from '../../expenses.service';
 import { GroupMembersService } from 'src/groups/group-members/group-members.service';
 import { GroupMemberExpenseMapper } from './mapping/group-member-expense.mapper';
+import Big from 'big.js';
 
 @Controller(
   '/groups/:groupId/expenses/:expenseId/sub-expenses/:subExpenseId/group-member-expenses',
@@ -96,7 +97,10 @@ export class GroupMemberExpensesController {
     }
 
     const result = await this.groupMemberExpensesService.update(
-      updateGroupMemberExpenseDtos,
+      updateGroupMemberExpenseDtos.map((group) => ({
+        ...group,
+        amount: Big(group.amount),
+      })),
       subExpenseId,
       groupId,
     );

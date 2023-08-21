@@ -78,7 +78,7 @@ export class GroupsService {
   }
 
   async remove(id: string) {
-    //TODO prisma transaction
+    //TODO: prisma transaction
     try {
       await this.expenseService.removeAllByGroupId(id);
 
@@ -94,7 +94,7 @@ export class GroupsService {
         },
       });
     } catch (e) {
-      console.log(e);
+      console.error(e);
       //TODO: Doesn't work needs to be fixed
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
@@ -127,7 +127,31 @@ export class GroupsService {
   private async initializeDefaultCategories(groupId: string) {
     const defaults = [
       {
-        name: 'Transportation',
+        name: 'Transport',
+        groupId,
+      },
+      {
+        name: 'Groceries',
+        groupId,
+      },
+      {
+        name: 'Restaurant',
+        groupId,
+      },
+      {
+        name: 'Subscription',
+        groupId,
+      },
+      {
+        name: 'Entertainment',
+        groupId,
+      },
+      {
+        name: 'Alcohol',
+        groupId,
+      },
+      {
+        name: 'Clothing',
         groupId,
       },
     ];

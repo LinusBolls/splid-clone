@@ -1,8 +1,7 @@
-import { Group } from '../../entities/group.entity';
-import { ExpensesAssetEntity } from '../expenses-asset/entities/expenses-asset.entity';
 import { SubExpenseEntity } from '../sub-expenses/entities/sub-expense.entity';
 import { ExpensesCategoryEntity } from '../../expense-categories/entities/expense-category.entity';
 import { Expose } from 'class-transformer';
+import Big from 'big.js';
 
 export class ExpenseEntity {
   @Expose() id: string;
@@ -12,8 +11,12 @@ export class ExpenseEntity {
   @Expose() description: string;
   @Expose() location: string;
 
-  @Expose() assets: ExpensesAssetEntity[];
+  @Expose() amount: Big;
+  @Expose() currency: string;
+  @Expose() amountReferenceCurrency: Big;
+
+  //@Expose() assets: ExpensesAssetEntity[];
   @Expose() subExpenses: SubExpenseEntity[];
-  @Expose() group: Group;
+  //@Expose() group: Group;
   @Expose() categories: ExpensesCategoryEntity[];
 }

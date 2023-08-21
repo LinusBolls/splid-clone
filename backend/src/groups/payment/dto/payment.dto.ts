@@ -1,12 +1,10 @@
 import Big from 'big.js';
-import { Group } from '@prisma/client';
 import { GroupMemberEntity } from '../../group-members/entities/group-member.entity';
+import { Group } from '@prisma/client';
 import { Expose } from 'class-transformer';
 
-export class PaymentEntity {
+export class PaymentDto {
   @Expose() id: string;
-  @Expose() createdAt: Date;
-  @Expose() updatedAt: Date;
 
   @Expose() amountReferenceCurrency: Big;
   @Expose() currency: string;

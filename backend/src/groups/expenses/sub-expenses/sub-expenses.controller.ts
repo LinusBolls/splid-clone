@@ -3,11 +3,12 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
-  Patch,
   Post,
+  Put,
 } from '@nestjs/common';
 import { SubExpensesService } from './sub-expenses.service';
 import { CreateSubExpenseDto } from './dto/create-sub-expense.dto';
@@ -76,7 +77,7 @@ export class SubExpensesController {
     return findResult;
   }
 
-  @Patch(':id')
+  @Put(':id')
   async update(
     @Param('id') id: string,
     @Param('groupid') groupId: string,
@@ -96,6 +97,7 @@ export class SubExpensesController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   async remove(
     @Param('groupid') groupId: string,
     @Param('id') id: string,
