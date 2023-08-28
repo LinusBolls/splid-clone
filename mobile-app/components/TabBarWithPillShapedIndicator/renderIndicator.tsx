@@ -6,6 +6,9 @@ import { NavigationState, SceneRendererProps } from 'react-native-tab-view';
  */
 const ORIGINAL_WIDTH_OF_PILL_BODY = 100;
 
+const borderColor = '#eee';
+const backgroundColor = 'white';
+
 const getIndicatorRenderFunction =
   (tabWidths: Record<string, number>, height: number, color: string) =>
   (
@@ -93,7 +96,7 @@ const getIndicatorRenderFunction =
             borderBottomLeftRadius: height / 2,
             backgroundColor: color,
 
-            borderColor: '#eee',
+            borderColor,
             borderLeftWidth: 1,
             borderTopWidth: 1,
             borderBottomWidth: 1,
@@ -112,7 +115,7 @@ const getIndicatorRenderFunction =
 
             backgroundColor: color,
 
-            borderColor: '#eee',
+            borderColor,
             borderTopWidth: 1,
             borderBottomWidth: 1,
           }}
@@ -128,7 +131,7 @@ const getIndicatorRenderFunction =
             borderBottomRightRadius: height / 2,
             backgroundColor: color,
 
-            borderColor: '#eee',
+            borderColor,
             borderRightWidth: 1,
             borderTopWidth: 1,
             borderBottomWidth: 1,

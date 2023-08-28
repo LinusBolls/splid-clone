@@ -7,16 +7,15 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import ActivityList, { ExpenseActivity } from '../components/ActivityList';
 import FloatingActionButton from '../components/FloatingActionButton';
+import IconButton from '../components/IconButton';
 import getPaginationDotTabBarRenderFunction from '../components/TabBarWithPillShapedIndicator/paginationDotTabBar';
 import getTabBarRenderFunction from '../components/TabBarWithPillShapedIndicator/renderTabBar';
+import Format from '../constants/Format';
 import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
 import { useExpensesStore } from '../stores/expensesStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
 import { useNavigation } from '../stores/navigationStore';
-
-const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
 
 // const INDICATOR_PILL_HEIGHT = 48;
 
@@ -83,6 +82,7 @@ export default function GroupOverviewScreen({ navigation }: any) {
       })),
     };
   });
+  const totalAmount = activities.reduce((sum, i) => sum + i.amountForYou, 0);
 
   const tabs: {
     id: string;
@@ -107,10 +107,10 @@ export default function GroupOverviewScreen({ navigation }: any) {
 
         lastUpdated: activities
           .filter((j) => j.groupId === i.id)
-          .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))[0]?.date,
+          .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)) ?? -1)[0]?.date,
         hasActivities: activities.filter((j) => j.groupId === i.id).length > 0,
       }))
-      .sort((a, b) => dayjs(a.lastUpdated).diff(dayjs(b.lastUpdated))),
+      .sort((a, b) => dayjs(a.lastUpdated).diff(dayjs(b.lastUpdated)) ?? -1),
   ];
 
   const sceneMap = tabs.reduce(
@@ -133,70 +133,58 @@ export default function GroupOverviewScreen({ navigation }: any) {
               flex: 1,
             }}
           >
-            <View
-              style={{
-                flexDirection: 'row',
-              }}
-            >
-              <Pressable
+            {i.id !== 'tab:system:all' && (
+              <View
                 style={{
                   flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-
-                  height: 48,
-                  paddingHorizontal: 16,
-
-                  borderRadius: 24,
-                  borderWidth: 1,
-                  borderColor: '#eee',
-
-                  flex: 1,
                 }}
               >
-                <Text
+                <Pressable
                   style={{
-                    color: '#222',
-                    fontSize: 13,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+
+                    height: 48,
+                    paddingHorizontal: 16,
+
+                    borderRadius: 24,
+                    borderWidth: 1,
+                    borderColor: '#eee',
+
+                    flex: 1,
                   }}
+                  onPress={() => navigation.navigate('GroupInfo')}
                 >
-                  {membersStore.members
-                    .filter((i) => i.groupId === activeGroupId)
-                    .map((i) => i.name)
-                    .join(', ')}
-                </Text>
-                <MaterialIcons
-                  name="arrow-forward-ios"
-                  size={20}
-                  color="#888"
-                />
-              </Pressable>
+                  <Text
+                    style={{
+                      color: '#222',
+                      fontSize: 13,
 
-              <Pressable
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-
-                  width: 48,
-                  height: 48,
-
-                  borderRadius: 24,
-                  borderWidth: 1,
-                  borderColor: '#eee',
-
-                  marginLeft: 16,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#222',
-                    fontSize: 13,
-                  }}
-                >
-                  <MaterialIcons name="edit" size={20} color="#888" />
-                </Text>
-              </Pressable>
-            </View>
+                      flex: 1,
+                    }}
+                  >
+                    {membersStore.members
+                      .filter((j) => j.groupId === i.id)
+                      .map((j) => j.name)
+                      .join(', ')}
+                  </Text>
+                  <MaterialIcons
+                    name="arrow-forward-ios"
+                    size={20}
+                    color="#888"
+                    style={{
+                      marginLeft: 16,
+                    }}
+                  />
+                </Pressable>
+                {/* <View style={{ width: 16 }} />
+              <IconButton
+                icon={<MaterialIcons name="edit" size={20} color="#888" />}
+                onClick={() => alert('moin')}
+              /> */}
+              </View>
+            )}
             <ActivityList
               activities={i.activities}
               onActivityClick={(activity) => {
@@ -215,7 +203,7 @@ export default function GroupOverviewScreen({ navigation }: any) {
   const routes = tabs.map((i) => ({
     key: i.id,
     title: i.title,
-    subtitle: formatPriceEur(i.totalAmount),
+    subtitle: Format.currency.EUR(i.totalAmount, true),
   }));
 
   const [index, setIndex] = useState(0);
@@ -236,17 +224,45 @@ export default function GroupOverviewScreen({ navigation }: any) {
     >
       <View
         style={{
-          height: 16,
-        }}
-      ></View>
-      <View
-        style={{
           height: 48,
         }}
-      ></View>
-      <Pressable onPress={() => navigation.navigate('CreateGroup')}>
-        <Text style={{}}>New group</Text>
-      </Pressable>
+      />
+      <View
+        style={{
+          flexDirection: 'row',
+
+          height: 48,
+        }}
+      >
+        <View
+          style={{
+            alignItems: 'center',
+            flex: 1,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 26,
+              fontWeight: '500',
+
+              color: '#222',
+            }}
+          >
+            {Format.currency.EUR(totalAmount, true)}
+          </Text>
+          <Text
+            style={{
+              fontSize: 13,
+              fontWeight: '500',
+
+              color: '#888',
+            }}
+          >
+            Total balance
+          </Text>
+        </View>
+      </View>
+      <View style={{ height: 16 }} />
       <View
         style={{
           position: 'relative',
@@ -264,7 +280,9 @@ export default function GroupOverviewScreen({ navigation }: any) {
           }}
           onIndexChange={onSwipe}
           renderScene={renderScene}
-          renderTabBar={getTabBarRenderFunction(48)}
+          renderTabBar={getTabBarRenderFunction(48, () =>
+            navigation.navigate('CreateGroup')
+          )}
         />
         <FloatingActionButton
           onClick={() => navigation.navigate('CreateExpense')}

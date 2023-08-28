@@ -100,6 +100,7 @@ export default function CreateNewGroup({ navigation }: any) {
           }}
         />
         <TextInput
+          returnKeyType="done"
           multiline
           blurOnSubmit
           selectTextOnFocus

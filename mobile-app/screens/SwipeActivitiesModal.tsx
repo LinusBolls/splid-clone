@@ -13,9 +13,6 @@ import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useGroupsStore } from '../stores/groupsStore';
 import { useNavigation } from '../stores/navigationStore';
 
-const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
-
 export default function SwipeActivitiesModal({ navigation }: any) {
   const navigationStore = useNavigation();
 

@@ -20,6 +20,7 @@ import CreateOrJoinGroupScreen from '../screens/CreateOrJoinGroupScreen';
 import EditExpenseModal from '../screens/EditExpenseModal';
 import EditExpenseScreen from '../screens/EditExpenseScreen';
 import ErrorScreen from '../screens/ErrorScreen';
+import GroupInfoScreen from '../screens/GroupInfoScreen';
 import GroupOverviewScreen from '../screens/GroupOverviewScreen';
 import JoinGroupScreen from '../screens/JoinGroupScreen';
 import SwipeActivitiesModal from '../screens/SwipeActivitiesModal';
@@ -108,6 +109,11 @@ function RootNavigator() {
       <Stack.Screen
         name="Root"
         component={GroupOverviewScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GroupInfo"
+        component={GroupInfoScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

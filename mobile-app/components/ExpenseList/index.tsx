@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+import Format from '../../constants/Format';
 import NumberInput from '../NumberInput';
 
 export interface Item {
@@ -15,12 +16,6 @@ export interface Item {
     displayName: string;
   }[];
 }
-
-const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2 });
-
-const formatPercentage = (percentage: number) =>
-  percentage.toLocaleString(undefined, { maximumFractionDigits: 0 }) + '%';
 
 export interface ExpenseListProps {
   totalAmount: number;
@@ -190,7 +185,7 @@ export default function ExpenseList({
                         fontWeight: '500',
                       }}
                     >
-                      {formatPriceEur(i.price)}
+                      {Format.currency.EUR(i.price, true)}
                     </Text>
                   </View>
                 ) : null}

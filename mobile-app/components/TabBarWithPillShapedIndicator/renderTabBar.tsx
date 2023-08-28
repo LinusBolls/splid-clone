@@ -5,11 +5,13 @@ import {
   SceneRendererProps,
   TabBar,
 } from 'react-native-tab-view';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+import IconButton from '../IconButton';
 import getIndicatorRenderFunction from './renderIndicator';
 
 const getTabBarRenderFunction =
-  (height: number) =>
+  (height: number, onCreate: () => void) =>
   (
     props: SceneRendererProps & {
       navigationState: NavigationState<{
@@ -38,10 +40,12 @@ const getTabBarRenderFunction =
     );
     const tabBarWidth = props.layout.width;
 
+    const sache = 32 + 48 + 16;
+
     const tabsAreOverflowingTheTabBar = combinedWidthOfAllTabs > tabBarWidth;
 
     const maxTabBarShift = tabsAreOverflowingTheTabBar
-      ? tabBarWidth - combinedWidthOfAllTabs
+      ? tabBarWidth - combinedWidthOfAllTabs - sache
       : 0;
 
     /**
@@ -59,82 +63,112 @@ const getTabBarRenderFunction =
     });
 
     return (
-      <Animated.View
+      <View
         style={{
-          transform: [{ translateX }],
+          position: 'relative',
+          flexDirection: 'row',
 
-          width: combinedWidthOfAllTabs,
+          paddingHorizontal: 16,
           paddingBottom: 16,
         }}
       >
-        <TabBar
-          renderIndicator={getIndicatorRenderFunction(
-            tabWidths,
-            height,
-            'white'
-          )}
-          renderTabBarItem={(itemProps) => {
-            return (
-              <Pressable
-                onLayout={(e) => {
-                  updateTabWidth(itemProps.key, e.nativeEvent.layout.width);
-                }}
-                onPress={itemProps.onPress}
-                onLongPress={itemProps.onLongPress}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+        <View
+          style={{
+            overflow: 'hidden',
 
-                  minWidth: height * 2,
-                  height: height,
-                  paddingRight: 16,
-                  paddingLeft: itemProps.route.icon ? 0 : 16,
-                }}
-              >
-                {itemProps.route.icon ? (
-                  <View
+            flex: 1,
+          }}
+        >
+          <Animated.View
+            style={{
+              transform: [{ translateX }],
+
+              width: combinedWidthOfAllTabs,
+            }}
+          >
+            <TabBar
+              renderIndicator={getIndicatorRenderFunction(
+                tabWidths,
+                height,
+                '#eee'
+              )}
+              renderTabBarItem={(itemProps) => {
+                return (
+                  <Pressable
+                    onLayout={(e) => {
+                      updateTabWidth(itemProps.key, e.nativeEvent.layout.width);
+                    }}
+                    onPress={itemProps.onPress}
+                    onLongPress={itemProps.onLongPress}
                     style={{
+                      flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'center',
 
-                      width: height,
+                      minWidth: height * 2,
                       height: height,
+                      paddingRight: 16,
+                      paddingLeft: itemProps.route.icon ? 0 : 16,
                     }}
                   >
+                    {itemProps.route.icon ? (
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+
+                          width: height,
+                          height: height,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            backgroundColor: 'red',
+                          }}
+                        />
+                      </View>
+                    ) : null}
+
                     <View
                       style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        backgroundColor: 'red',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+
+                        marginLeft: 4,
                       }}
-                    />
-                  </View>
-                ) : null}
+                    >
+                      <Text style={{ fontSize: 13, color: '#222' }}>
+                        {itemProps.route.title}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: '#888' }}>
+                        {itemProps.route.subtitle}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              }}
+              style={{ backgroundColor: 'transparent' }}
+              {...props}
+            />
+          </Animated.View>
+        </View>
+        <View
+          style={{
+            width: 48,
+            height: 48,
 
-                <View
-                  style={{
-                    flexDirection: 'column',
-                    alignItems: 'center',
-
-                    marginLeft: 4,
-                  }}
-                >
-                  <Text style={{ fontSize: 13, color: '#222' }}>
-                    {itemProps.route.title}
-                  </Text>
-                  <Text style={{ fontSize: 10, color: '#888' }}>
-                    {itemProps.route.subtitle}
-                  </Text>
-                </View>
-              </Pressable>
-            );
+            backgroundColor: 'transparent',
           }}
-          style={{ backgroundColor: 'transparent' }}
-          {...props}
-        />
-      </Animated.View>
+        >
+          <IconButton
+            icon={<MaterialIcons name="add" size={20} color="#888" />}
+            onClick={onCreate}
+          />
+        </View>
+      </View>
     );
   };
 export default getTabBarRenderFunction;

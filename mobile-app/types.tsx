@@ -22,6 +22,7 @@ export type RootStackParamList = {
   SwipeSubexpensesModal: undefined;
   CreateExpense: undefined;
   CreateGroup: undefined;
+  GroupInfo: undefined;
   NotFound: undefined;
   CreateOrJoinGroup: undefined;
   JoinGroup: undefined;

@@ -1,11 +1,7 @@
 import { forwardRef, LegacyRef, useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
-const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+import Format from '../../constants/Format';
 
 export interface NumberInputProps {
   placeholder?: string;
@@ -15,6 +11,8 @@ export interface NumberInputProps {
   onChange: (value: number) => void;
 
   isStatic?: boolean;
+
+  size?: 'small' | 'large';
 }
 export default forwardRef(function NumberInput(
   {
@@ -24,13 +22,14 @@ export default forwardRef(function NumberInput(
     value,
     onChange,
     isStatic = false,
+    size = 'large',
   }: NumberInputProps,
   ref: LegacyRef<TextInput>
 ) {
-  const [rawValue, setRawValue] = useState(formatPriceEur(value));
+  const [rawValue, setRawValue] = useState(Format.currency.EUR(value));
 
   useEffect(() => {
-    setRawValue(formatPriceEur(value));
+    setRawValue(Format.currency.EUR(value));
   }, [value]);
 
   function onBlur() {
@@ -44,9 +43,11 @@ export default forwardRef(function NumberInput(
       }
       onChange(numericValue);
 
-      return formatPriceEur(numericValue);
+      return Format.currency.EUR(numericValue);
     });
   }
+
+  const height = size === 'small' ? 24 : 32;
 
   return (
     <View style={{ position: 'relative', backgroundColor: 'none' }}>
@@ -59,11 +60,11 @@ export default forwardRef(function NumberInput(
           alignItems: 'center',
           justifyContent: 'center',
 
-          height: 32,
-          paddingLeft: 32,
-          paddingRight: 12,
+          height: height,
+          paddingLeft: height,
+          paddingRight: size === 'small' ? 8 : 12,
 
-          borderRadius: 8,
+          borderRadius: size === 'small' ? 12 : 8,
 
           color: '#682BE9',
           fontSize: 16,
@@ -83,8 +84,8 @@ export default forwardRef(function NumberInput(
           alignItems: 'center',
           justifyContent: 'center',
 
-          width: 32,
-          height: 32,
+          width: height,
+          height: height,
         }}
       >
         <Text

@@ -1,5 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 
+import NumberInput from '../../NumberInput';
+
 export interface ChipProps {
   title: string;
   isActive: boolean;
@@ -14,6 +16,8 @@ export default function Chip({
 
   onPress,
 }: ChipProps) {
+  const FEATURE_PERCENTAGE_INPUT = false;
+
   return (
     <Pressable
       style={{
@@ -25,7 +29,7 @@ export default function Chip({
         marginTop: 8,
 
         height: 32,
-        paddingRight: 16,
+        paddingRight: FEATURE_PERCENTAGE_INPUT ? 3 : 16,
         paddingLeft: icon ? 4 : 16,
 
         borderRadius: 999,
@@ -42,11 +46,16 @@ export default function Chip({
           fontSize: 13,
           fontWeight: '600',
 
+          marginRight: FEATURE_PERCENTAGE_INPUT ? 4 : 0,
+
           color: isActive ? '#682BE9' : '#222',
         }}
       >
         {title}
       </Text>
+      {FEATURE_PERCENTAGE_INPUT && (
+        <NumberInput value={33} onChange={() => {}} size="small" />
+      )}
     </Pressable>
   );
 }

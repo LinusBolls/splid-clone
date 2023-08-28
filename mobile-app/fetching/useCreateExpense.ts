@@ -28,7 +28,7 @@ export default function useCreateExpense() {
 
   const createExpense = async (params: {
     groupId: string;
-    expense: Omit<Expense, 'id' | 'groupId'>;
+    expense: Omit<Expense, 'id' | 'groupId' | 'subExpenseIds'>;
     subexpenses: SubexpenseDraft[];
   }) => {
     if (!client) {

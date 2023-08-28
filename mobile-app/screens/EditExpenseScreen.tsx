@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import Button from '../components/Button';
 import ChipMultiselect from '../components/ChipMultiselect';
 import ExpenseList from '../components/ExpenseList';
+import TitleInput from '../components/TitleInput';
 import useCreateExpense from '../fetching/useCreateExpense';
 import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
 import { useExpenseDraftStore } from '../stores/expenseDraftStore';
@@ -19,11 +19,54 @@ export default function EditExpenseScreen({ navigation }: any) {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm<{
+    title: string;
+    description: string;
+    categories: {
+      id: string;
+    }[];
+    sponsors: {
+      id: string;
+    }[];
+    date: Date;
+  }>({
+    defaultValues: {
+      title: '',
+      description: '',
+      categories: [],
+      sponsors: [],
+      date: new Date(),
+    },
+  });
+  const { append: addCategory, remove: removeCategory } = useFieldArray({
+    control,
+    name: 'categories',
+  });
 
-  const onSubmit = (data: any) => {
-    console.log(data); // You will see the submitted form data logged here
-  };
+  const { append: addSponsor, remove: removeSponsor } = useFieldArray({
+    control,
+    name: 'sponsors',
+  });
+
+  const onSubmit = handleSubmit(async (values) => {
+    alert(JSON.stringify(values, null, 2));
+
+    const expense = {
+      ...values,
+      location: "",
+      categoryIds: values.categories.map(i => i.id),
+      sponsorShares: values.sponsors.map(i => ({
+        memberId: i.id,
+        percentage: 100,
+      })),
+      currency: "EUR",
+    };
+    const subexpenses = values;
+
+    await createExpenseMutation.mutateAsync({ groupId, expense, subexpenses });
+
+    navigation.goBack();
+  });
 
   const [isDatepickerOpen, setIsDatepickerOpen] = useState(false);
 
@@ -66,19 +109,18 @@ export default function EditExpenseScreen({ navigation }: any) {
 
     navigation.navigate('Modal');
   }
-  async function onCreate() {
-    // TODO: validate
+  // async function onCreate() {
 
-    const expense = draftStore.actions.getDraft();
+  //   const expense = draftStore.actions.getDraft();
 
-    const subexpenses = draftStore.actions.getSubexpenseDrafts();
+  //   const subexpenses = draftStore.actions.getSubexpenseDrafts();
 
-    await createExpenseMutation.mutateAsync({ groupId, expense, subexpenses });
+  //   await createExpenseMutation.mutateAsync({ groupId, expense, subexpenses });
 
-    draftStore.actions.clear();
+  //   draftStore.actions.clear();
 
-    navigation.goBack();
-  }
+  //   navigation.goBack();
+  // }
   function onCancel() {
     draftStore.actions.clear();
 
@@ -104,15 +146,10 @@ export default function EditExpenseScreen({ navigation }: any) {
       >
         <View
           style={{
-            height: 16,
-          }}
-        ></View>
-        <View
-          style={{
             height: 48,
           }}
         ></View>
-        <View
+        {/* <View
           style={{
             flexDirection: 'row',
             justifyContent: 'flex-end',
@@ -151,95 +188,132 @@ export default function EditExpenseScreen({ navigation }: any) {
           >
             <MaterialIcons name="insert-photo" size={20} color="#222" />
           </Pressable>
-        </View>
-        <TextInput
-          multiline
-          blurOnSubmit
-          ref={titleInputRef}
-          selectTextOnFocus
-          placeholder={'Add expense title (required)'}
-          style={{
-            fontSize: 26,
-            color: '#222',
+        </View> */}
 
-            textAlign: 'center',
-          }}
-          onChangeText={draftStore.actions.setTitle}
-          value={draftStore.title}
+        <Controller
+          rules={{ required: 'Expense must have a title' }}
+          control={control}
+          name="title"
+          render={({ field: { value, onChange }, fieldState: { error } }) => (
+            <TitleInput
+              placeholder="Add expense title"
+              value={value}
+              onChange={onChange}
+              hasError={!!error}
+              ref={titleInputRef}
+            />
+          )}
         />
-        <TextInput
-          multiline
-          blurOnSubmit
-          selectTextOnFocus
-          placeholder={'Add expense description (optional)'}
-          style={{
-            fontSize: 13,
-            color: '#888',
-
-            textAlign: 'center',
-
-            marginTop: 8,
-            marginBottom: 16,
-          }}
-          onChangeText={draftStore.actions.setDescription}
-          value={draftStore.description}
-        />
-        <ChipMultiselect
-          options={categories.map((i) => ({
-            title: i.name,
-            isActive: draftStore.categoryIds.includes(i.id),
-            value: i.id,
-          }))}
-          onOptionSelect={(option) =>
-            draftStore.actions.addCategory(option.value)
-          }
-          onOptionUnselect={(option) =>
-            draftStore.actions.removeCategory(option.value)
-          }
-        />
-        <View
-          style={{
-            backgroundColor: 'transparent',
-          }}
-        >
-          <Pressable
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-
-              paddingRight: 16,
-            }}
-            onPress={() => setIsDatepickerOpen(true)}
-          >
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-
-                width: 48,
-                height: 48,
-
-                backgroundColor: 'transparent',
-              }}
-            >
-              <MaterialCommunityIcon
-                name="calendar-month-outline"
-                size={20}
-                color="#222"
-              />
-            </View>
-            <Text
+        <Controller
+          control={control}
+          name="description"
+          render={({ field: { value, onChange } }) => (
+            <TextInput
+              returnKeyType="done"
+              multiline
+              blurOnSubmit
+              selectTextOnFocus
+              placeholder={'Add expense description'}
               style={{
                 fontSize: 13,
+                color: '#888',
 
-                color: '#222',
+                textAlign: 'center',
+
+                marginTop: 8,
+                marginBottom: 16,
               }}
-            >
-              {draftStore.date.toDateString()}
-            </Text>
-          </Pressable>
-        </View>
-        <View
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
+        <Controller
+          rules={{ required: 'Must have at least one category' }}
+          control={control}
+          name="categories"
+          render={({ field: { value }, fieldState: { error } }) => (
+            <ChipMultiselect
+              title="Categories"
+              hasError={!!error}
+              options={categories.map((i) => ({
+                title: i.name,
+                isActive: value.some(j => j.id === i.id),
+                value: i.id,
+              }))}
+              onOptionSelect={(option) => addCategory({ id: option.value })}
+              onOptionUnselect={(option) =>
+                removeCategory(value.findIndex((j) => j.id === option.value))
+              }
+            />
+          )}
+        />
+        <Controller
+          rules={{ required: 'Must have a date' }}
+          control={control}
+          name="date"
+          render={({ field: { value, onChange }, fieldState: { error } }) => (
+            <>
+              <View
+                style={{
+                  backgroundColor: 'transparent',
+                }}
+              >
+                <Pressable
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+
+                    paddingRight: 16,
+                  }}
+                  onPress={() => setIsDatepickerOpen(true)}
+                >
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+
+                      width: 48,
+                      height: 48,
+
+                      backgroundColor: 'transparent',
+                    }}
+                  >
+                    <MaterialCommunityIcon
+                      name="calendar-month-outline"
+                      size={20}
+                      color="#222"
+                    />
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 13,
+
+                      color: '#222',
+                    }}
+                  >
+                    {value.toDateString()}
+                  </Text>
+                </Pressable>
+              </View>
+              <DatePicker
+                modal
+                mode="date"
+                open={isDatepickerOpen}
+                date={value}
+                onConfirm={(date) => {
+                  setIsDatepickerOpen(false);
+
+                  onChange(date);
+                }}
+                onCancel={() => {
+                  setIsDatepickerOpen(false);
+                }}
+              />
+            </>
+          )}
+        />
+        {/* <View
           style={{
             marginBottom: 16,
 
@@ -288,8 +362,29 @@ export default function EditExpenseScreen({ navigation }: any) {
             style={{
               marginLeft: 48,
             }}
-          >
+          > */}
+        <Controller
+          rules={{ required: 'Must have at least one sponsor' }}
+          control={control}
+          name="sponsors"
+          render={({ field: { value }, fieldState: { error } }) => (
             <ChipMultiselect
+              title="Who payed for this?"
+              hasError={!!error}
+              options={members.map((i) => ({
+                title: i.name,
+                isActive: value.some(j => j.id === i.id),
+                value: i.id,
+              }))}
+              onOptionSelect={(option) => addSponsor({ id: option.value })}
+              onOptionUnselect={(option) =>
+                removeSponsor(value.findIndex((j) => j.id === option.value))
+              }
+            />
+          )}
+        />
+        {/* <ChipMultiselect
+              title="Who payed for this?"
               options={members.map((i) => ({
                 title: i.name,
                 isActive: sponsors.some((j) => j.id === i.id),
@@ -314,23 +409,9 @@ export default function EditExpenseScreen({ navigation }: any) {
               }
               onOptionUnselect={(option) =>
                 draftStore.actions.removeSponsorShare(option.value)
-              }
-            />
-          </View>
-        </View>
-        <DatePicker
-          modal
-          mode="date"
-          open={isDatepickerOpen}
-          date={draftStore.date}
-          onConfirm={(date) => {
-            setIsDatepickerOpen(false);
-            draftStore.actions.setDate(date);
-          }}
-          onCancel={() => {
-            setIsDatepickerOpen(false);
-          }}
-        />
+              } */}
+        {/* </View> */}
+        {/* </View> */}
         <ExpenseList
           totalAmount={totalAmount}
           items={draftStore.subexpenses.map((i) => ({
@@ -376,7 +457,7 @@ export default function EditExpenseScreen({ navigation }: any) {
         <Button
           variant="primary"
           text={createExpenseMutation.isError ? 'Error' : 'Save'}
-          onClick={onCreate}
+          onClick={onSubmit}
           isLoading={createExpenseMutation.isLoading}
         />
       </View>

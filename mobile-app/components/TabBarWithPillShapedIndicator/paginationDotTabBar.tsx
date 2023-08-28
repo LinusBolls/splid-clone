@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import {
   NavigationState,
@@ -6,6 +6,7 @@ import {
   TabBar,
 } from 'react-native-tab-view';
 
+import PaginationDot from '../Pagination-Dots';
 import getIndicatorRenderFunction from './renderIndicator';
 
 const activeDotColor = '#808892';
@@ -69,12 +70,49 @@ const getPaginationDotTabBarRenderFunction =
       outputRange: translateXOutputRange,
     });
 
+    const activeRouteIdxToDotSizes: Record<number, number[]> = routes.map(
+      (_, routeIdx) => {
+        return routes.map((_, activeRouteIdx) => {
+          const distanceFromActiveDot = Math.abs(routeIdx - activeRouteIdx);
+
+          const isAfterActiveDot = routeIdx < activeRouteIdx;
+          const isBeforeActiveDot = routeIdx > activeRouteIdx;
+
+          const isOneOfTheFirst = activeRouteIdx < 3;
+
+          if (routes.length < 5) return DotSize.LARGE / DotSize.SMALL;
+          if (distanceFromActiveDot === 0) return DotSize.LARGE / DotSize.SMALL;
+          if (distanceFromActiveDot < 3 && isBeforeActiveDot)
+            return DotSize.LARGE / DotSize.SMALL;
+          if (isOneOfTheFirst && isAfterActiveDot)
+            return DotSize.LARGE / DotSize.SMALL;
+
+          if (distanceFromActiveDot === 1 || activeRouteIdx < 4)
+            return DotSize.MEDIUM / DotSize.SMALL;
+
+          return 1;
+        });
+      }
+    );
+
+    (props.position as Animated.AnimatedInterpolation<number>).addListener(
+      ({ value }) => {
+        console.log('props.curPage updated:', value);
+      }
+    );
+
+    // return <PaginationDot
+    //   activeDotColor={'#7E8893'}
+    //   curPage={props.position}
+    //   maxPage={props.navigationState.routes.length}
+    // />
+
     return (
       <Animated.View
         style={{
-          transform: [{ translateX }],
+          // transform: [{ translateX }],
 
-          width: 7 * DotSize.LARGE + 6 * 18,
+          width: 7 * DotSize.LARGE + 6 * 18 * 100,
         }}
       >
         <TabBar
@@ -84,35 +122,38 @@ const getPaginationDotTabBarRenderFunction =
             'white'
           )}
           renderTabBarItem={(itemProps) => {
-            const itemIdx = routes.findIndex((i) => i.key === itemProps.key);
+            const routeIdx = routes.findIndex((i) => i.key === itemProps.key);
 
-            const backgroundColor = props.position.interpolate({
-              inputRange: inputRange,
-              outputRange: routes.map((_, routeIdx) =>
-                routeIdx === itemIdx ? activeDotColor : inactiveDotColor
-              ),
-            });
+            // const backgroundColor = props.position.interpolate({
+            //   inputRange: inputRange,
+            //   outputRange: routes.map((_, routeIdx) =>
+            //     routeIdx === itemIdx ? activeDotColor : inactiveDotColor
+            //   ),
+            // });
 
-            const scaleOutputRange = routes.map((_, routeIdx) => {
-              const distanceFromActiveDot = Math.abs(routeIdx - itemIdx);
+            const scaleOutputRange = activeRouteIdxToDotSizes[routeIdx];
 
-              const isAfterActiveDot = routeIdx < itemIdx;
-              const isBeforeActiveDot = routeIdx > itemIdx;
+            const gaps = routeIdx * 0;
 
-              const isOneOfTheFirst = itemIdx < 3;
+            const relativeDistanceFromStart = gaps + routeIdx * DotSize.SMALL;
 
-              if (routes.length < 5) return DotSize.LARGE / DotSize.SMALL;
-              if (distanceFromActiveDot === 0)
-                return DotSize.LARGE / DotSize.SMALL;
-              if (distanceFromActiveDot < 3 && isBeforeActiveDot)
-                return DotSize.LARGE / DotSize.SMALL;
-              if (isOneOfTheFirst && isAfterActiveDot)
-                return DotSize.LARGE / DotSize.SMALL;
+            const translateXOutputRange = routes.map((_, activeRouteIdx) => {
+              const absoluteDistanceFromStart =
+                activeRouteIdxToDotSizes[activeRouteIdx]
+                  .slice(0, routeIdx)
+                  .map((i) => i * DotSize.SMALL)
+                  .reduce((sum, i) => sum + i, 0) + gaps;
 
-              if (distanceFromActiveDot === 1 || itemIdx < 4)
-                return DotSize.MEDIUM / DotSize.SMALL;
+              console.log(
+                'dings:',
+                routeIdx,
+                absoluteDistanceFromStart,
+                relativeDistanceFromStart
+              );
 
-              return 1;
+              return 0;
+
+              return absoluteDistanceFromStart - relativeDistanceFromStart;
             });
 
             const scale = props.position.interpolate({
@@ -120,88 +161,46 @@ const getPaginationDotTabBarRenderFunction =
               outputRange: scaleOutputRange,
             });
 
+            const translateX = props.position.interpolate({
+              inputRange,
+              outputRange: translateXOutputRange,
+            });
+
             return (
               <Animated.View
                 style={{
                   width: DotSize.SMALL,
                   height: DotSize.SMALL,
-                  // backgroundColor,
 
                   borderRadius: 24,
 
-                  marginLeft: 18,
-
-                  marginVertical: 4,
-
                   transform: [{ scale }],
 
-                  // backgroundColor: "red",
+                  // position: "absolute",
+
+                  // left: 0,
+                  // top: 0,
+
+                  // width: 999,
+                  // height: 999,
+
+                  // zIndex: 999,
+
+                  backgroundColor: 'orange',
 
                   // backgroundColor: props.position.interpolate({
                   //   inputRange: [0, routes.length],
                   //   outputRange: ['red', 'blue'],
                   // }),
                 }}
-              ></Animated.View>
-            );
-            return (
-              <Pressable
-                onLayout={(e) => {
-                  updateTabWidth(itemProps.key, e.nativeEvent.layout.width);
-                }}
-                onPress={itemProps.onPress}
-                onLongPress={itemProps.onLongPress}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-
-                  minWidth: height * 2,
-                  height: height,
-                  paddingRight: 16,
-                  paddingLeft: itemProps.route.icon ? 0 : 16,
-                }}
-              >
-                {itemProps.route.icon ? (
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-
-                      width: height,
-                      height: height,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        backgroundColor: 'red',
-                      }}
-                    />
-                  </View>
-                ) : null}
-
-                <View
-                  style={{
-                    flexDirection: 'column',
-                    alignItems: 'center',
-
-                    marginLeft: 4,
-                  }}
-                >
-                  <Text style={{ fontSize: 13, color: '#222' }}>
-                    {itemProps.route.title}
-                  </Text>
-                  <Text style={{ fontSize: 10, color: '#888' }}>
-                    {itemProps.route.subtitle}
-                  </Text>
-                </View>
-              </Pressable>
+              />
             );
           }}
-          style={{ backgroundColor: 'transparent', height: DotSize.LARGE }}
+          style={{
+            backgroundColor: 'red',
+            height: DotSize.LARGE,
+            position: 'relative',
+          }}
           {...props}
         />
       </Animated.View>

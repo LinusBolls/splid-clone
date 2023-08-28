@@ -2,14 +2,9 @@ import { useEffect, useRef } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+import Format from '../../constants/Format';
 import ChipMultiselect from '../ChipMultiselect';
 import NumberInput from '../NumberInput';
-
-const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
-
-const formatPercentage = (percentage: number) =>
-  percentage.toLocaleString(undefined, { maximumFractionDigits: 0 }) + '%';
 
 export interface Gainer {
   title: string;
@@ -120,7 +115,7 @@ export default function SubexpenseInfo({
         }}
       >
         <Text style={{ fontSize: 13, color: '#888' }}>
-          {formatPercentage(percentageOfTotal)}
+          {Format.percentage.INTEGER(percentageOfTotal)}
         </Text>
       </View>
       <View

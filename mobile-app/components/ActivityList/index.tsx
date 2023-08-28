@@ -1,8 +1,7 @@
 import dayjs from 'dayjs';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
-const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
+import Format from '../../constants/Format';
 
 const BalanceInfluence = {
   NEUTRAL: {
@@ -134,7 +133,7 @@ export default function ActivityList({
                   fontWeight: '500',
                 }}
               >
-                {dayjs(date).format('MMMM D')}
+                {Format.date.ACTIVITY_LIST(date)}
               </Text>
             </View>
             <View
@@ -290,7 +289,7 @@ export default function ActivityList({
                             >
                               {balanceInfluence.id === 'NEGATIVE' &&
                                 balanceInfluence.prefix}
-                              {formatPriceEur(i.amountForYou)}
+                              {Format.currency.EUR(i.amountForYou, true)}
                             </Text>
                           </View>
 
@@ -311,7 +310,7 @@ export default function ActivityList({
                                 color: '#888',
                               }}
                             >
-                              {formatPriceEur(i.totalAmount)}
+                              {Format.currency.EUR(i.totalAmount, true)}
                             </Text>
                           </View>
                         </View>

@@ -6,14 +6,12 @@ import ModalDragHandle from '../components/ModalDragHandle';
 import SubexpenseInfo from '../components/SubexpenseInfo';
 import SwiperHeader from '../components/SwiperHeader';
 import { Text, View } from '../components/Themed';
+import Format from '../constants/Format';
 import { useExpenseCategoriesStore } from '../stores/expenseCategoriesStore';
 import { useExpenseDraftStore } from '../stores/expenseDraftStore';
 import { useExpensesStore } from '../stores/expensesStore';
 import { useGroupMembersStore } from '../stores/groupMembersStore';
 import { useNavigation } from '../stores/navigationStore';
-
-const formatPriceEur = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '€';
 
 export default function EditExpenseModal({ navigation }: any) {
   const navigationStore = useNavigation();
@@ -87,7 +85,7 @@ export default function EditExpenseModal({ navigation }: any) {
             fontSize: 13,
           }}
         >
-          {formatPriceEur(activeExpenseTotalAmount)}
+          {Format.currency.EUR(activeExpenseTotalAmount, true)}
         </Text>
       </View>
       <SwiperHeader

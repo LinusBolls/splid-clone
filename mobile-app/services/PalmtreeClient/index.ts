@@ -42,7 +42,14 @@ export default class PalmtreeClient {
     F extends (requestConfig: RequestConfig, ...args: any[]) => any
   >(f: F) {
     const newF: FuncWithoutConfigArg<typeof f> = (...args) => {
-      return f(this.requestConfig, ...args);
+      return f(this.requestConfig, ...args).catch((err: unknown) => {
+        console.error(
+          '[palmtree-client] request failed:',
+          JSON.stringify(err, null, 2)
+        );
+
+        throw err;
+      });
     };
     return newF;
   }
